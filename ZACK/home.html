@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Sidebar Vue</title>
+  <link rel="stylesheet" href="../ZACK/sidebar/sidebar.css">
+</head>
+<body>
+  <div id="app">
+    <nav class="sidebar">
+      <button
+        v-for="(pagina, idx) in pagine"
+        :key="pagina.file"
+        :class="{ active: paginaAttiva === idx }"
+        @click="vaiAllaPagina(idx)"
+      >
+        {{ pagina.nome }}
+      </button>
+    </nav>
+    <div class="main-content">
+      <div class="content">
+        <iframe
+          v-if="paginaAttiva !== null"
+          :src="pagine[paginaAttiva]?.file"
+          style="width:100%; height:90vh; border:none;"
+        ></iframe>
+        <div v-else class="page-title-preview">Seleziona una pagina</div>
+      </div>
+    </div>
+  </div>
+  <script src="../ZACK/vue.global.js"></script>
+  <script>
+    const { createApp } = Vue
+    createApp({
+      data() {
+        return {
+          pagine: [
+            { nome: 'Home', file: 'sidebar/sidebar-pagine/sidebar-home.html' },
+            { nome: 'Pagina 1', file: 'sidebar/sidebar-pagine/pagina1.html' },
+            { nome: 'Pagina 2', file: 'sidebar/sidebar-pagine/pagina2.html' },
+            { nome: 'Pagina 3', file: 'sidebar/sidebar-pagine/pagina3.html' },
+            { nome: 'Pagina 4', file: 'sidebar/sidebar-pagine/pagina4.html' },
+            { nome: 'Pagina 5', file: 'sidebar/sidebar-pagine/pagina5.html' },
+            { nome: 'Pagina 6', file: 'sidebar/sidebar-pagine/pagina6.html' }
+          ],
+          paginaAttiva: null
+        }
+      },
+      methods: {
+        vaiAllaPagina(idx) {
+          this.paginaAttiva = idx;
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>

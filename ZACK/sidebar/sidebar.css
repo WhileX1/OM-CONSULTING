@@ -1,4 +1,4 @@
-    body {
+body {
       margin: 0;
       font-family: Arial, sans-serif;
     }
@@ -12,30 +12,67 @@
       color: #fff;
       display: flex;
       flex-direction: column;
-      padding-top: 40px;
+      padding-top: 64px; /* spazio in alto per la sidebar */
     }
-    .sidebar button {
-      background: none;
-      border: none;
-      color: #fff;
-      padding: 20px;
-      text-align: left;
-      font-size: 18px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .sidebar button.active,
-    .sidebar button:hover {
-      background: #444;
-    }
+    /* Migliora i bottoni della sidebar */
+.sidebar button {
+  background: linear-gradient(90deg, #23272f 60%, #333 100%);
+  border: none;
+  border-left: 4px solid #0097a7;      /* bordo cyan visibile sempre */
+  border-top: 2px solid #4dd0e1;       /* bordo sopra cyan chiaro */
+  border-bottom: 2px solid #4dd0e1;    /* bordo sotto cyan chiaro */
+  color: #fff;
+  padding: 16px 24px;
+  margin: 10px 10px;
+  border-radius: 12px 0 0 12px; /* arrotonda solo a sinistra */
+  text-align: left;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s,
+    border-color 0.2s,
+    color 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  outline: none;
+}
+
+.sidebar button:hover {
+  background: linear-gradient(90deg, #2e3a40 60%, #3a4a50 100%);
+  color: #b2ebf2;
+  border-left: 5px solid #00bcd4;
+  border-top: 2px solid #4dd0e1;
+  border-bottom: 2px solid #4dd0e1;
+  box-shadow: 0 4px 16px rgba(0,188,212,0.10);
+  transform: translateY(-1px) scale(1.01);
+}
+
+.sidebar button.active {
+  background: linear-gradient(90deg, #e0f7fa 60%, #b2ebf2 100%);
+  color: #006064;
+  border-left: 5px solid #00bcd4;
+  border-top: 2px solid #4dd0e1;
+  border-bottom: 2px solid #4dd0e1;
+  box-shadow: 0 4px 16px rgba(0,188,212,0.18);
+  transform: translateY(-2px) scale(1.03);
+  font-weight: 700;
+}
     .content {
-      margin-left: 180px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      margin-left: 180px;   /* spazio per la sidebar */
+      padding-top: 64px;    /* spazio in alto */
+      height: 90vh;
     }
     .page-title {
       font-size: 60px;
       color: #222;
+    }
+    .page-title-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 5rem;
+    color: #888;
+    text-align: center;
     }
