@@ -1,21 +1,25 @@
 body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: 0;
-      width: 180px;
-      height: 100vh;
-      background: #222;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding-top: 64px; /* spazio in alto per la sidebar */
-    }
-    /* Migliora i bottoni della sidebar */
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 180px;
+  height: 100vh;
+  background: #222;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding-top: 64px; /* spazio in alto per la sidebar */
+  border-right: 4px solid #00bcd4; /* bordo cyan a destra */
+}
+/* Migliora i bottoni della sidebar */
 .sidebar button {
+  position: relative;
+  width: 100%;
+  left: 0;
   background: linear-gradient(90deg, #23272f 60%, #333 100%);
   border: none;
   border-left: 4px solid #0097a7;      /* bordo cyan visibile sempre */
@@ -26,26 +30,27 @@ body {
   margin: 10px 10px;
   border-radius: 12px 0 0 12px; /* arrotonda solo a sinistra */
   text-align: left;
-  font-size: 18px;
+  font-size: 18px;      /* grandezza fissa */
   cursor: pointer;
-  transition: 
+  transition:
     background 0.2s,
     box-shadow 0.2s,
-    transform 0.1s,
     border-color 0.2s,
-    color 0.2s;
+    color 0.2s,
+    transform 0.2s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.10);
   outline: none;
 }
-
-.sidebar button:hover {
+.sidebar button:hover,
+.sidebar button:focus{
+  transform: translateX(8px); /* trasla a destra di 8px */
+  z-index: 2;
   background: linear-gradient(90deg, #2e3a40 60%, #3a4a50 100%);
   color: #b2ebf2;
   border-left: 5px solid #00bcd4;
   border-top: 2px solid #4dd0e1;
   border-bottom: 2px solid #4dd0e1;
   box-shadow: 0 4px 16px rgba(0,188,212,0.10);
-  transform: translateY(-1px) scale(1.01);
 }
 
 .sidebar button.active {
@@ -56,7 +61,8 @@ body {
   border-bottom: 2px solid #4dd0e1;
   box-shadow: 0 4px 16px rgba(0,188,212,0.18);
   transform: translateY(-2px) scale(1.03);
-  font-weight: 700;
+  font-weight: 400;     /* se vuoi solo il grassetto */
+  transform: translateX(8px); /* trasla a destra di 8px */
 }
     .content {
       margin-left: 180px;   /* spazio per la sidebar */

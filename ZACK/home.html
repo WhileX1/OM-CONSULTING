@@ -13,6 +13,7 @@
         :key="pagina.file"
         :class="{ active: paginaAttiva === idx }"
         @click="vaiAllaPagina(idx)"
+        :aria-current="paginaAttiva === idx ? 'page' : null"
       >
         {{ pagina.nome }}
       </button>
@@ -29,29 +30,6 @@
     </div>
   </div>
   <script src="../ZACK/vue.global.js"></script>
-  <script>
-    const { createApp } = Vue
-    createApp({
-      data() {
-        return {
-          pagine: [
-            { nome: 'Home', file: 'sidebar/sidebar-pagine/sidebar-home.html' },
-            { nome: 'Pagina 1', file: 'sidebar/sidebar-pagine/pagina1.html' },
-            { nome: 'Pagina 2', file: 'sidebar/sidebar-pagine/pagina2.html' },
-            { nome: 'Pagina 3', file: 'sidebar/sidebar-pagine/pagina3.html' },
-            { nome: 'Pagina 4', file: 'sidebar/sidebar-pagine/pagina4.html' },
-            { nome: 'Pagina 5', file: 'sidebar/sidebar-pagine/pagina5.html' },
-            { nome: 'Pagina 6', file: 'sidebar/sidebar-pagine/pagina6.html' }
-          ],
-          paginaAttiva: null
-        }
-      },
-      methods: {
-        vaiAllaPagina(idx) {
-          this.paginaAttiva = idx;
-        }
-      }
-    }).mount('#app')
-  </script>
+  <script src="home.js"></script>
 </body>
 </html>
