@@ -1,0 +1,41 @@
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 180px;
+      height: 100vh;
+      background: #222;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding-top: 40px;
+    }
+    .sidebar button {
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 20px;
+      text-align: left;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sidebar button.active,
+    .sidebar button:hover {
+      background: #444;
+    }
+    .content {
+      margin-left: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .page-title {
+      font-size: 60px;
+      color: #222;
+    }
