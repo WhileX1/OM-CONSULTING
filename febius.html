@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test JavaScript</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .access-btn {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin: 20px;
+      cursor: pointer;
+    }
+    .access-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 340px;
+      height: 340px;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .hexagon-bg {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      background: #f0f0f0;
+      clip-path: polygon(
+        50% 0%,
+        93% 25%,
+        93% 75%,
+        50% 100%,
+        7% 75%,
+        7% 25%
+      );
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .icon-menu {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      pointer-events: auto;
+      z-index: 2;
+    }
+    /* Posiziona i 6 bottoni ai vertici dell'esagono */
+    .icon-menu.hex-0 { transform: translate(-50%, -50%) rotate(0deg)    translateY(-110px) rotate(0deg);}
+    .icon-menu.hex-1 { transform: translate(-50%, -50%) rotate(60deg)   translateY(-110px) rotate(-60deg);}
+    .icon-menu.hex-2 { transform: translate(-50%, -50%) rotate(120deg)  translateY(-110px) rotate(-120deg);}
+    .icon-menu.hex-3 { transform: translate(-50%, -50%) rotate(180deg)  translateY(-110px) rotate(-180deg);}
+    .icon-menu.hex-4 { transform: translate(-50%, -50%) rotate(240deg)  translateY(-110px) rotate(-240deg);}
+    .icon-menu.hex-5 { transform: translate(-50%, -50%) rotate(300deg)  translateY(-110px) rotate(-300deg);}
+    .icon-menu button {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 2px solid #888;
+      background: #fff;
+      font-size: 1.6em;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: background 0.2s;
+    }
+    .icon-menu button.active {
+      background: #e0e0e0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      border-color: #555;
+    }
+    .icon-menu button:focus {
+      outline: 2px solid #0078d7;
+    }
+    .dropdown-menu {
+      position: absolute;
+      min-width: 140px;
+      z-index: 10;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      white-space: nowrap;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+    /* Posiziona le dropdown ai lati dell'esagono */
+    .dropdown-pos-0 { /* in alto */
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(0deg) translateY(-150px) rotate(0deg);
+    }
+    .dropdown-pos-1 {
+      left: 50%;
+      top: 50%;
+      /* Sposta la dropdown più lateralmente e leggermente più in alto */
+      transform: translate(-50%, -50%) rotate(60deg) translateY(-180px) translateX(40px) rotate(-60deg);
+    }
+    .dropdown-pos-2 {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(120deg) translateY(-150px) rotate(-120deg);
+    }
+    .dropdown-pos-3 {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(180deg) translateY(-150px) rotate(-180deg);
+    }
+    .dropdown-pos-4 {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(240deg) translateY(-150px) rotate(-240deg);
+    }
+    .dropdown-pos-5 {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(300deg) translateY(-150px) rotate(-300deg);
+    }
+    .icon-menu button.active,
+    .dropdown-menu button.active {
+      background: #d0d0d0;
+      border-color: #333;
+      color: #222;
+    }
+    .dropdown-menu button {
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid #aaa;
+      background: #f8f8f8;
+      cursor: pointer;
+      font-size: 0.95em;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .dropdown-menu button:not(.active):hover {
+      background: #ececec;
+      border-color: #888;
+    }
+
+    /* Simulazioni daltonismo (filtri CSS semplificati) */
+    .dalton-protanopia {
+      filter: grayscale(0.5) contrast(1.2) sepia(0.4) hue-rotate(-20deg);
+    }
+    .dalton-deuteranopia {
+      filter: grayscale(0.5) contrast(1.2) sepia(0.4) hue-rotate(20deg);
+    }
+    .dalton-tritanopia {
+      filter: grayscale(0.5) contrast(1.2) sepia(0.6) hue-rotate(90deg);
+    }
+
+    /* High contrast mode */
+    .high-contrast {
+      filter: contrast(2) brightness(1.1) !important;
+    }
+    /* Inverted colors mode */
+    .invert-colors {
+      filter: invert(1) hue-rotate(180deg) !important;
+    }
+    /* Underline links */
+    .underline-links a, .underline-links a:visited {
+      text-decoration: underline !important;
+    }
+  </style>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Menu accessibilità (i 6 pulsanti) -->
+    <button @click="showPanel = !showPanel" class="access-btn">
+      <i class="fa-solid fa-universal-access"></i> Accessibilità
+    </button>
+    <!-- Wrapper filtrato -->
+    <div id="dalton-wrapper">
+      <!-- ... -->
+    </div>
+    <div v-if="showPanel" class="access-panel">
+      <div class="hexagon-bg"></div>
+      <div v-for="(item, idx) in items" :key="idx" class="icon-menu" :class="'hex-' + idx">
+        <button 
+          @click="toggleMenu(idx)" 
+          :class="{ active: openMenu[idx] }"
+        >
+          <i :class="item.icon"></i>
+        </button>
+        <div
+          v-if="openMenu[idx]"
+          class="dropdown-menu"
+          :class="dropdownPosition(idx)"
+        >
+          <!-- Daltonismo per idx === 0 -->
+          <p v-if="idx === 0" style="margin-bottom:16px; font-size:1.25em; font-weight:bold; text-align:center;">
+            Daltonismo
+          </p>
+          <div v-if="idx === 0" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+            <!-- Prima riga: Protanopia, Deuteranopia, Tritanopia -->
+            <div style="display: flex; gap: 10px;">
+              <!-- Daltonismo -->
+              <button @click="setDaltonismo('protanopia')" :class="{ active: daltonismo === 'protanopia' }" title="Protanopia">
+                <i class="fa-solid fa-eye-slash" style="color:#c0392b"></i>
+              </button>
+              <button @click="setDaltonismo('deuteranopia')" :class="{ active: daltonismo === 'deuteranopia' }" title="Deuteranopia">
+                <i class="fa-solid fa-eye" style="color:#27ae60"></i>
+              </button>
+              <button @click="setDaltonismo('tritanopia')" :class="{ active: daltonismo === 'tritanopia' }" title="Tritanopia">
+                <i class="fa-solid fa-eye" style="color:#2980b9"></i>
+              </button>
+            </div>
+            <!-- Seconda riga: Normale, Contrasto elevato, Inversione colori -->
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <!-- Normale -->
+              <button @click="setDaltonismo(null)" :class="{ active: !daltonismo }" title="Normale">
+                <i class="fa-solid fa-droplet-slash"></i>
+              </button>
+              <!-- Contrasto elevato -->
+              <button @click="toggleHighContrast" :class="{ active: highContrast }" title="Contrasto elevato">
+                <i class="fa-solid fa-fill-drip"></i>
+              </button>
+              <!-- Inversione colori -->
+              <button @click="toggleInvertColors" :class="{ active: invertColors }" title="Inversione colori">
+                <i class="fa-solid fa-adjust"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Visibilità per idx === 1 -->
+          <div v-if="idx === 1" style="min-width:220px;">
+            <p style="margin-bottom:12px; font-size:1.25em; font-weight:bold; text-align:center;">
+              Visibilità
+            </p>
+            <label style="display:block; text-align:center; margin-bottom:8px;">
+              <span style="font-size:1.1em;">Dimensione carattere</span>
+            </label>
+            <input
+              type="range"
+              min="12"
+              max="32"
+              v-model="fontSize"
+              @input="setFontSize"
+              style="width: 100%;"
+            />
+            <div style="text-align:center; font-size:1.1em; margin-top:4px;">
+              <span style="margin-left:8px;">{{ fontSize }}px</span>
+            </div>
+            <hr style="margin:12px 0;">
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <label>
+                <input type="checkbox" v-model="highContrast" @change="setHighContrast">
+                Contrasto elevato
+              </label>
+              <label>
+                <input type="checkbox" v-model="invertColors" @change="setInvertColors">
+                Inversione colori
+              </label>
+              <label>
+                Spaziatura testo
+                <input type="range" min="0" max="0.3" step="0.01" v-model="letterSpacing" @input="setLetterSpacing" style="width:90px; margin-left:8px;">
+                <span>{{ (letterSpacing * 100).toFixed(0) }}%</span>
+              </label>
+              <label>
+                <input type="checkbox" v-model="underlineLinks" @change="setUnderlineLinks">
+                Sottolinea i link
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          showPanel: false,
+          openMenu: [false, false, false, false, false, false],
+          daltonismo: null,
+          fontSize: 16,
+          highContrast: false,
+          invertColors: false,
+          letterSpacing: 0,
+          underlineLinks: false,
+          items: [
+            {
+              icon: 'fa-solid fa-palette', // Solo la palette!
+              menuTitle: 'Colori',
+              options: []
+            },
+            {
+              icon: 'fa-solid fa-font',
+              menuTitle: 'Dimensione testo',
+              options: ['Piccolo', 'Medio', 'Grande']
+            },
+            {
+              icon: 'fa-solid fa-volume-up',
+              menuTitle: 'Sintesi vocale',
+              options: ['Attiva', 'Disattiva']
+            },
+            {
+              icon: 'fa-solid fa-mouse-pointer',
+              menuTitle: 'Cursore',
+              options: ['Normale', 'Grande', 'Colorato']
+            },
+            {
+              icon: 'fa-solid fa-keyboard',
+              menuTitle: 'Navigazione tastiera',
+              options: ['Attiva', 'Disattiva']
+            },
+            {
+              icon: 'fa-solid fa-language',
+              menuTitle: 'Lingua',
+              options: ['Italiano', 'English', 'Español']
+            }
+          ]
+        }
+      },
+      methods: {
+        toggleMenu(idx) {
+          this.openMenu[idx] = !this.openMenu[idx];
+        },
+        dropdownPosition(idx) {
+          return `dropdown-pos-${idx}`;
+        },
+        setDaltonismo(type) {
+          this.daltonismo = type;
+          const wrapper = document.getElementById('dalton-wrapper');
+          wrapper.classList.remove('dalton-protanopia', 'dalton-deuteranopia', 'dalton-tritanopia');
+          if (type) {
+            wrapper.classList.add('dalton-' + type);
+          }
+        },
+        setFontSize() {
+          document.documentElement.style.fontSize = this.fontSize + 'px';
+        },
+        setHighContrast() {
+          const wrapper = document.getElementById('dalton-wrapper');
+          wrapper.classList.toggle('high-contrast', this.highContrast);
+        },
+        setInvertColors() {
+          const wrapper = document.getElementById('dalton-wrapper');
+          wrapper.classList.toggle('invert-colors', this.invertColors);
+        },
+        setLetterSpacing() {
+          document.body.style.letterSpacing = this.letterSpacing + 'em';
+        },
+        setUnderlineLinks() {
+          if (this.underlineLinks) {
+            document.body.classList.add('underline-links');
+          } else {
+            document.body.classList.remove('underline-links');
+          }
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
