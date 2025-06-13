@@ -1,0 +1,24 @@
+Lavoreremo sulle corrispettive cartelle, perchè altrimenti rischiamo di sovrascriverci a vicenda
+La cartella conterrà entrambi i nostri lavori, quindi non preoccuparti (tranne se tocchi i file non tuoi)
+vue.global.js non toccarlo, copialo dentro la tua cartella e usalo per i tuoi progetti
+
+Apri "GIT BASH"
+
+SE VUOI CREA COPIA DAL SITO (Facoltativo)
+git clone https://github.com/WhileX1/OM-CONSULTING.git
+
+PER SOVRASCRIVERE IL TUO LOCALE DAL SITO (DOPO CHE HAI FATTO "CD /PATH/CARTELLA")
+git pull origin main
+
+
+PER CARICARE IL TUO LAVORO NEL SITO
+DOPO CHE CHE HAI FATTO "CD /PATH/CARTELLA" (FAI UNO AD UNO I COMANDI QUI SOTTO):
+
+1) AGGIUNGE I FILE DEL PATH (CD)
+git add .
+
+2) SALVA LE MODIFICHE
+git commit -m "messaggio descrittivo"
+
+3) MANDA LE MODIFICHE AL SITO
+git push origin main
