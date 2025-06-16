@@ -1,0 +1,11 @@
+.iframe-ricerca {
+  position: absolute;
+  top: 0;
+  left: 180px; /* larghezza sidebar */
+  width: calc(100vw - 180px);
+  height: 40px; /* o l'altezza che vuoi */
+  border: none;
+  z-index: 10;
+  background: transparent;
+  pointer-events: auto;
+}

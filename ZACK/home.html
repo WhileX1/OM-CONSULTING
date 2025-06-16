@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <title>Sidebar Vue</title>
   <link rel="stylesheet" href="../ZACK/sidebar/sidebar.css">
+  <link rel="stylesheet" href="ricerca.css">
 </head>
 <body>
   <div id="app">
+
+    <!-- Sidebar laterale -->
     <nav class="sidebar">
       <button
         v-for="(pagina, idx) in pagine"
@@ -18,18 +21,30 @@
         {{ pagina.nome }}
       </button>
     </nav>
+
+    <!-- Barra di ricerca sopra il contenuto -->
+    <iframe
+      src="ricerca/ricerca.html"
+      class="iframe-ricerca"
+      title="Barra di ricerca"
+      style="width:100%; height:20px; border:none; display:block;"
+    ></iframe>
+
+    <!-- Qui la sottopagina -->
     <div class="main-content">
       <div class="content">
         <iframe
           v-if="paginaAttiva !== null"
           :src="pagine[paginaAttiva]?.file"
-          style="width:100%; height:90vh; border:none;"
+          style="width:100%; height:calc(90vh - 70px); border:none;"
+          title="Sottopagina"
         ></iframe>
         <div v-else class="page-title-preview">Seleziona una pagina</div>
       </div>
     </div>
+    
   </div>
   <script src="../ZACK/vue.global.js"></script>
-  <script src="home.js"></script>
+  <script src="../ZACK/sidebar/sidebar.js"></script>
 </body>
 </html>

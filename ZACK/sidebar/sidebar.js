@@ -16,7 +16,11 @@ createApp({
   },
   methods: {
     vaiAllaPagina(idx) {
-      this.paginaAttiva = idx;
+      if (this.paginaAttiva === idx) {
+        this.paginaAttiva = null; // Deseleziona se già attivo
+      } else {
+        this.paginaAttiva = idx;
+      }
     }
   }
 }).mount('#app')

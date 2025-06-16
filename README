@@ -7,18 +7,16 @@ Apri "GIT BASH"
 SE VUOI CREA COPIA DAL SITO (Facoltativo)
 git clone https://github.com/WhileX1/OM-CONSULTING.git
 
-0) PER SOVRASCRIVERE IL TUO LOCALE DAL SITO (DOPO CHE HAI FATTO "CD /PATH/CARTELLA")
-git pull origin main
+Per il download:
+0) git pull origin main
 
 
-PER CARICARE IL TUO LAVORO NEL SITO
-DOPO CHE CHE HAI FATTO "CD /PATH/CARTELLA" (FAI UNO AD UNO I COMANDI QUI SOTTO):
+Per l'uplouad sul sito fai UNO ad UNO i comandi:
 
-1) AGGIUNGE I FILES DEL PATH (CD)
-git add .
+1) cd /Desktop/OM-CONSULTING
 
-2) SALVA LE MODIFICHE
-git commit -m "descrizione"
+2) git add .
 
-3) MANDA LE MODIFICHE AL SITO
-git push origin main
+3) git commit -m "descrizione"
+
+4) git push origin main

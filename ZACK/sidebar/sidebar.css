@@ -53,6 +53,11 @@ body {
   box-shadow: 0 4px 16px rgba(0,188,212,0.10);
 }
 
+.sidebar button:focus:not(.active),
+.sidebar button:hover:not(.active) {
+  transform: none;
+}
+
 .sidebar button.active {
   background: linear-gradient(90deg, #e0f7fa 60%, #b2ebf2 100%);
   color: #006064;
