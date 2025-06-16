@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Sidebar Vue</title>
+  <link rel="stylesheet" href="../ZACK/home.css">
   <link rel="stylesheet" href="../ZACK/sidebar/sidebar.css">
-  <link rel="stylesheet" href="ricerca.css">
+  <link rel="stylesheet" href="../ZACK/ricerca/ricerca.css">
 </head>
 <body>
   <div id="app">
@@ -13,10 +14,12 @@
     <nav class="sidebar">
       <button
         v-for="(pagina, idx) in pagine"
-        :key="pagina.file"
-        :class="{ active: paginaAttiva === idx }"
+        :key="idx"
         @click="vaiAllaPagina(idx)"
-        :aria-current="paginaAttiva === idx ? 'page' : null"
+        :class="{ 
+          'active': paginaAttiva === idx,
+          'search-match': corrispondeRicerca(idx)
+        }"
       >
         {{ pagina.nome }}
       </button>
@@ -24,7 +27,7 @@
 
     <!-- Barra di ricerca sopra il contenuto -->
     <iframe
-      src="ricerca/ricerca.html"
+      src="../ZACK/ricerca/ricerca.html"
       class="iframe-ricerca"
       title="Barra di ricerca"
     ></iframe>

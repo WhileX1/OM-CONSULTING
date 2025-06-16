@@ -2,17 +2,26 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Barra di Ricerca</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="ricerca.css">
+  <!-- Usa Vue locale -->
+  <script src="../vue.global.js"></script>
+  <title>Ricerca</title>
 </head>
 <body>
-  <div class="top-bar">
-    <input
-      class="search-bar"
-      type="text"
-      placeholder="Cerca nelle pagine..."
-    />
+  <div id="app-ricerca">
+    <div class="top-bar">
+      <input 
+        type="text" 
+        class="search-bar" 
+        placeholder="Cerca nelle pagine" 
+        v-model="searchTerm"
+        @input="onSearchInput"
+        @keypress.enter="onSearchEnter"
+      >
+    </div>
   </div>
+
   <script src="ricerca.js"></script>
 </body>
 </html>
