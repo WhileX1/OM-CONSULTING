@@ -1,26 +1,71 @@
+/* Reset di base e font per l'intera applicazione */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
 }
+
+/* Effetto libro - versione minimalista e separata */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 180px; /* Esattamente al bordo della sidebar */
+  width: 12px; /* Larghezza dell'effetto */
+  height: 100vh;
+  z-index: 1; /* Sotto la sidebar e sotto tutto */
+  pointer-events: none; /* Non interferisce con i click */
+  
+  /* Effetto visivo combinato */
+  background: 
+    /* Dorso rosso a sinistra */
+    linear-gradient(
+      to right,
+      #c62828 0%, 
+      #c62828 16.6%, /* 2px di 12px */
+      #f8f4e0 16.6%, 
+      #f8f4e0 83.3%, /* 10px di 12px */
+      #a52222 83.3%, 
+      #a52222 100%
+    ),
+    /* Texture pagine */
+    repeating-linear-gradient(
+      90deg,
+      transparent 2px,
+      transparent 2.8px,
+      rgba(210, 190, 150, 0.5) 2.8px,
+      rgba(210, 190, 150, 0.5) 3px,
+      transparent 3px,
+      transparent 4px
+    );
+  
+  /* Ombra per profondità */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.15);
+}
+
+/* Contenitore e stile della barra laterale */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   width: 180px;
   height: 100vh;
-  background: #181c1b;      /* nero-verde molto scuro */
+  background: #181c1b;
   color: #e0e0e0;
   display: flex;
   flex-direction: column;
-  padding-top: 64px; /* spazio in alto per la sidebar */
-  border-right: 2px solid #c62828; /* bordo rosso a destra */
+  padding-top: 64px;
+  /* IMPORTANTE: Rimuovi il bordo che causa conflitti */
+  border-right: none;
+  z-index: 10; /* Priorità massima per la sidebar */
 }
+
+/* Posizionamento e dimensioni dell'iframe della barra di ricerca */
 .iframe-ricerca {
   position: absolute;
   top: 10px;
-  left: 180px;
-  width: 60%; /* Ridotta da 'calc(100% - 180px - 20px)' */
-  max-width: 600px; /* Ridotta da 800px */
+  left: 192px; /* 180px (sidebar) + 12px (effetto libro) */
+  width: 60%;
+  max-width: 600px;
   height: 40px;
   border: none;
   z-index: 10;
@@ -29,17 +74,71 @@ body {
   margin: 0 auto;
   right: 0;
 }
+
+/* Contenitore principale del contenuto che si adatta alla sidebar */
 .content {
-  margin-left: 180px;   /* spazio per la sidebar */
-  padding-top: 64px;    /* spazio in alto */
+  margin-left: 192px; /* 180px (sidebar) + 12px (effetto libro) */
+  padding-top: 64px;
   height: 90vh;
+  position: relative;
+  z-index: 1;
 }
+
+/* Messaggio di istruzioni quando nessuna pagina è selezionata */
 .page-title-preview {
-display: flex;
-align-items: center;
-justify-content: center;
-height: 100%;
-font-size: 5rem;
-color: #888;
-text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 5rem;
+  color: #888;
+  text-align: center;
+  margin-top: -100px;
+}
+
+/* Stile per l'iframe del contenuto della pagina */
+.page-content {
+  width: 100%;
+  height: calc(90vh - 70px);
+  border: none;
+}
+
+/* Elemento dedicato per l'effetto libro - posizione corretta */
+#book-effect {
+  position: fixed;
+  top: 0;
+  left: 180px; /* Esattamente dopo la sidebar */
+  width: 12px;
+  height: 100%;
+  z-index: 2; /* Sotto la sidebar ma sopra il contenuto */
+  pointer-events: none;
+  display: flex;
+  flex-direction: row; /* Esplicito per IE/Edge */
+}
+
+/* Dorso del libro (rosso) */
+#book-effect::before {
+  content: "";
+  flex: 0 0 2px; /* width fisso */
+  height: 100%;
+  background: #c62828;
+  box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+/* Pagine centrali */
+#book-effect::after {
+  content: "";
+  flex: 0 0 8px; /* width fisso */
+  height: 100%;
+  background: #f8f4e0;
+  background-image: 
+    repeating-linear-gradient(
+      to right,
+      transparent,
+      transparent 0.8px,
+      rgba(210, 190, 150, 0.5) 0.8px,
+      rgba(210, 190, 150, 0.5) 1px,
+      transparent 1px,
+      transparent 2px
+    );
 }

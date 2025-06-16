@@ -1,22 +1,82 @@
+/* Reset CSS base per l'iframe della ricerca */
 html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Elimina le scrollbar del documento interno */
+  overflow: hidden;
   height: 100%;
 }
 
+/* Contenitore principale della barra di ricerca */
 .top-bar {
   width: 100%;
   height: 40px;
   padding: 0 15px;
-  background: #ffffff; /* Bianco puro invece di #f5f5f5 */
+  background: #ffffff;
   display: flex;
   align-items: center;
-  box-sizing: border-box; /* Importante: include padding nel calcolo della larghezza */
+  box-sizing: border-box;
+  gap: 10px;
 }
 
+/* Wrapper per le opzioni aggiuntive di ricerca */
+.search-options {
+  display: flex;
+  align-items: center;
+}
+
+/* Stile base del pulsante toggle "Includi contenuti" */
+.search-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  transition: all 0.3s;
+  border: 1px solid #ddd;
+}
+
+/* Stile del toggle quando è attivo */
+.search-toggle-active {
+  background-color: rgba(198, 40, 40, 0.1) ;
+  border-color: #c62828;
+}
+
+/* Nasconde l'input checkbox mantenendo la funzionalità */
+.search-toggle input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Stile del testo all'interno del toggle */
+.toggle-text {
+  font-size: 12px;
+  color: #666;
+  margin-right: 4px;
+}
+
+/* Stile del contenitore dell'icona nel toggle */
+.toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+/* Cambia colore del testo e icona quando il toggle è attivo */
+.search-toggle input:checked + .toggle-text,
+.search-toggle input:checked ~ .toggle-icon {
+  color: #c62828;
+  font-weight: 500;
+}
+
+/* Stile base dell'input di ricerca */
 .search-bar {
-  width: 100%;
+  flex: 1;
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 20px;
@@ -26,28 +86,29 @@ html, body {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Hover - versione leggera del tema rosso */
+/* Effetto hover sull'input di ricerca */
 .search-bar:hover {
   border-color: rgba(198, 40, 40, 0.2);
 }
 
-/* Focus/Attivo - rosso pieno della sidebar */
+/* Stile dell'input di ricerca quando ha il focus */
 .search-bar:focus {
-  border-color: #c62828; /* rosso pieno della sidebar */
+  border-color: #c62828;
   box-shadow: 0 0 6px rgba(198, 40, 40, 0.4);
   outline: none;
 }
 
-/* Hover mentre è a fuoco - mantiene il bordo rosso */
+/* Mantiene lo stile focus anche durante hover */
 .search-bar:focus:hover {
   border-color: #c62828;
 }
 
+/* Stile del testo placeholder nell'input di ricerca */
 .search-bar::placeholder {
-  color: #767676; /* grigio medio per buon contrasto */
+  color: #767676;
 }
 
-/* Stile per l'evidenziazione dei risultati di ricerca */
+/* Stile per evidenziare i termini di ricerca nei risultati */
 .search-highlight {
   background-color: #ffeb3b;
   color: #000;

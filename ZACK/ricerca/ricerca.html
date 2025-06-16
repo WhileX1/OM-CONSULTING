@@ -3,25 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="ricerca.css">
-  <!-- Usa Vue locale -->
-  <script src="../vue.global.js"></script>
   <title>Ricerca</title>
+  
+  <!-- Stili CSS per la barra di ricerca -->
+  <link rel="stylesheet" href="ricerca.css">
+  <!-- Font Awesome per le icone -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Framework Vue.js per la reattività -->
+  <script src="../vue.global.js"></script>
 </head>
 <body>
+  <!-- Container principale dell'app Vue -->
   <div id="app-ricerca">
-    <div class="top-bar">
+    <!-- Barra superiore contenente la ricerca e le opzioni -->
+    <header class="top-bar">
+      <!-- Sezione per le opzioni di ricerca -->
+      <div class="search-options">
+        <!-- Toggle per attivare la ricerca nei contenuti -->
+        <div 
+          class="search-toggle"
+          :class="{'search-toggle-active': includiContenuto}"
+          @click="toggleIncludiContenuto"
+        >
+          <!-- Checkbox nascosta per gestire lo stato -->
+          <input 
+            type="checkbox" 
+            v-model="includiContenuto"
+            class="visually-hidden"
+          >
+          <!-- Etichetta testuale del toggle -->
+          <span class="toggle-text">Includi contenuti</span>
+          <!-- Icona del toggle -->
+          <span class="toggle-icon">
+            <i class="fas fa-file-alt"></i>
+          </span>
+        </div>
+      </div>
+      
+      <!-- Input per la barra di ricerca -->
       <input 
         type="text" 
         class="search-bar" 
-        placeholder="Cerca nelle pagine" 
+        :placeholder="includiContenuto ? 'Cerca nei contenuti' : 'Cerca nei titoli'" 
         v-model="searchTerm"
         @input="onSearchInput"
         @keypress.enter="onSearchEnter"
       >
-    </div>
+    </header>
   </div>
-
+  
+  <!-- Script JavaScript per la logica dell'applicazione -->
   <script src="ricerca.js"></script>
 </body>
 </html>

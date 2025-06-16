@@ -2,14 +2,21 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Sidebar Vue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZACK - Applicazione di Consultazione</title>
+  
+  <!-- Stili CSS in ordine di priorità -->
   <link rel="stylesheet" href="home.css">
   <link rel="stylesheet" href="sidebar/sidebar.css">
-  <link rel="stylesheet" href="ricerca/ricerca.css">
+  
+  <!-- Script JavaScript in ordine di dipendenza -->
+  <script src="vue.global.js"></script>
 </head>
 <body>
+  <!-- IMPORTANTE: Elemento effetto libro PRIMA dell'app Vue -->
+  <div id="book-effect"></div>
+  
   <div id="app">
-
     <!-- Sidebar laterale -->
     <nav class="sidebar">
       <button
@@ -30,23 +37,40 @@
       src="ricerca/ricerca.html"
       class="iframe-ricerca"
       title="Barra di ricerca"
+      frameborder="0"
     ></iframe>
 
-    <!-- Qui la sottopagina -->
-    <div class="main-content">
-      <div class="content">
-        <iframe
-          v-if="paginaAttiva !== null"
-          :src="pagine[paginaAttiva]?.file"
-          style="width:100%; height:calc(90vh - 70px); border:none;"
-          title="Sottopagina"
-        ></iframe>
-        <div v-else class="page-title-preview">Seleziona una pagina</div>
-      </div>
-    </div>
-    
+    <!-- Contenuto principale -->
+    <main class="content">
+      <iframe
+        v-if="paginaAttiva !== null"
+        :src="pagine[paginaAttiva]?.file"
+        class="page-content"
+        title="Sottopagina"
+        frameborder="0"
+      ></iframe>
+      <div v-else class="page-title-preview">Seleziona una pagina</div>
+    </main>
   </div>
-  <script src="vue.global.js"></script>
+  
+  <!-- Script applicazione -->
   <script src="sidebar/sidebar.js"></script>
+
+  <!-- Script per completare l'effetto libro -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const bookEffect = document.getElementById('book-effect');
+      
+      // Crea l'elemento per la copertina destra
+      const rightCover = document.createElement('div');
+      rightCover.style.width = '2px';
+      rightCover.style.height = '100%';
+      rightCover.style.background = '#a52222';
+      rightCover.style.boxShadow = '2px 0 4px rgba(0,0,0,0.3)';
+      
+      // Aggiungilo all'effetto libro
+      bookEffect.appendChild(rightCover);
+    });
+  </script>
 </body>
 </html>
