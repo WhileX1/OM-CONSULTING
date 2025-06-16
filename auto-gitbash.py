@@ -15,7 +15,7 @@ def run_command(command):
         text=True
     )
     
-    # Stampa output in tempo reale
+    # Stampa output in tempo reale da stdout
     while True:
         output = process.stdout.readline()
         if output == '' and process.poll() is not None:
@@ -23,10 +23,10 @@ def run_command(command):
         if output:
             print(output.strip())
     
-    # Stampa eventuali errori
+    # Stampa output di stderr (che per Git può contenere anche messaggi informativi)
     stderr = process.stderr.read().strip()
     if stderr:
-        print(f"ERRORE: {stderr}")
+        print(stderr)
     
     # Ritorna il codice di uscita
     return process.poll()
