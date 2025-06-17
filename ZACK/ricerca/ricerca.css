@@ -24,32 +24,88 @@ html, body {
   align-items: center;
 }
 
-/* Stile base del pulsante toggle "Includi contenuti" */
-.search-toggle {
+/* Stile per il toggle "Includi contenuti" */
+.toggle-container {
   display: flex;
   align-items: center;
   cursor: pointer;
-  user-select: none;
-  background-color: #f0f0f0;
-  border-radius: 4px;
   padding: 4px 8px;
-  transition: all 0.3s;
-  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+  border: 1px solid transparent; /* Modificato da 2px a 1px */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  user-select: none;
 }
 
-/* Stile del toggle quando è attivo */
-.search-toggle-active {
-  background-color: rgba(198, 40, 40, 0.1) ;
-  border-color: #c62828;
-}
-
-/* Nasconde l'input checkbox mantenendo la funzionalità */
-.search-toggle input {
+/* Nasconde l'input originale ma lo mantiene accessibile */
+.visually-hidden {
   position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Stile per gli elementi accessibili ma visivamente nascosti */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Container per l'input di ricerca */
+.search-input-container {
+  flex: 1;
+  position: relative;
+}
+
+/* Focus style visibile per utenti che navigano con tastiera */
+input:focus-visible,
+.toggle-container:focus-visible {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+}
+
+/* Stile per lo switch del toggle */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+  background-color: #ccc;
+  border-radius: 18px;
+  margin-right: 8px;
+  transition: background-color 0.3s;
+}
+
+/* Indicatore dello stato del toggle */
+.toggle-indicator {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* Stato attivo del toggle */
+input:checked + .toggle-switch {
+  background-color: #c62828;
+}
+
+input:checked + .toggle-switch .toggle-indicator {
+  transform: translateX(16px);
 }
 
 /* Stile del testo all'interno del toggle */
@@ -68,10 +124,24 @@ html, body {
 }
 
 /* Cambia colore del testo e icona quando il toggle è attivo */
-.search-toggle input:checked + .toggle-text,
-.search-toggle input:checked ~ .toggle-icon {
+input:checked ~ .toggle-text,
+input:checked ~ .toggle-icon {
   color: #c62828;
   font-weight: 500;
+}
+
+/* Effetto hover - bordo rosso e sollevamento */
+.toggle-container:hover {
+  border-color: #c62828;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+/* Effetto focus - per accessibilità */
+.toggle-container:focus-within {
+  border-color: #c62828;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
 }
 
 /* Stile base dell'input di ricerca */

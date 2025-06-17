@@ -15,6 +15,8 @@
 <body>
   <!-- IMPORTANTE: Elemento effetto libro PRIMA dell'app Vue -->
   <div id="book-effect"></div>
+  <!-- Elemento per il bordo destro della copertina -->
+  <div id="book-effect-right"></div>
   
   <div id="app">
     <!-- Sidebar laterale -->
@@ -55,22 +57,5 @@
   
   <!-- Script applicazione -->
   <script src="sidebar/sidebar.js"></script>
-
-  <!-- Script per completare l'effetto libro -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const bookEffect = document.getElementById('book-effect');
-      
-      // Crea l'elemento per la copertina destra
-      const rightCover = document.createElement('div');
-      rightCover.style.width = '2px';
-      rightCover.style.height = '100%';
-      rightCover.style.background = '#a52222';
-      rightCover.style.boxShadow = '2px 0 4px rgba(0,0,0,0.3)';
-      
-      // Aggiungilo all'effetto libro
-      bookEffect.appendChild(rightCover);
-    });
-  </script>
 </body>
 </html>

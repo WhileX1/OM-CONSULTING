@@ -4,44 +4,6 @@ body {
   font-family: Arial, sans-serif;
 }
 
-/* Effetto libro - versione minimalista e separata */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 180px; /* Esattamente al bordo della sidebar */
-  width: 12px; /* Larghezza dell'effetto */
-  height: 100vh;
-  z-index: 1; /* Sotto la sidebar e sotto tutto */
-  pointer-events: none; /* Non interferisce con i click */
-  
-  /* Effetto visivo combinato */
-  background: 
-    /* Dorso rosso a sinistra */
-    linear-gradient(
-      to right,
-      #c62828 0%, 
-      #c62828 16.6%, /* 2px di 12px */
-      #f8f4e0 16.6%, 
-      #f8f4e0 83.3%, /* 10px di 12px */
-      #a52222 83.3%, 
-      #a52222 100%
-    ),
-    /* Texture pagine */
-    repeating-linear-gradient(
-      90deg,
-      transparent 2px,
-      transparent 2.8px,
-      rgba(210, 190, 150, 0.5) 2.8px,
-      rgba(210, 190, 150, 0.5) 3px,
-      transparent 3px,
-      transparent 4px
-    );
-  
-  /* Ombra per profondità */
-  box-shadow: 2px 0 5px rgba(0,0,0,0.15);
-}
-
 /* Contenitore e stile della barra laterale */
 .sidebar {
   position: fixed;
@@ -54,8 +16,6 @@ body::before {
   display: flex;
   flex-direction: column;
   padding-top: 64px;
-  /* IMPORTANTE: Rimuovi il bordo che causa conflitti */
-  border-right: none;
   z-index: 10; /* Priorità massima per la sidebar */
 }
 
@@ -116,7 +76,7 @@ body::before {
   flex-direction: row; /* Esplicito per IE/Edge */
 }
 
-/* Dorso del libro (rosso) */
+/* Dorso del libro (rosso) - lato sinistro */
 #book-effect::before {
   content: "";
   flex: 0 0 2px; /* width fisso */
@@ -125,10 +85,10 @@ body::before {
   box-shadow: 0 0 3px rgba(0,0,0,0.3);
 }
 
-/* Pagine centrali */
+/* Pagine centrali con effetto ombra */
 #book-effect::after {
   content: "";
-  flex: 0 0 8px; /* width fisso */
+  flex: 0 0 10px; /* width fisso - aumentato a 10px per riempire lo spazio fino al bordo destro */
   height: 100%;
   background: #f8f4e0;
   background-image: 
@@ -141,4 +101,18 @@ body::before {
       transparent 1px,
       transparent 2px
     );
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.15); /* Ombra interna per effetto pagine */
+}
+
+/* Bordo destro della copertina (elemento separato) */
+#book-effect-right {
+  position: fixed;
+  top: 0;
+  left: 192px; /* 180px (sidebar) + 12px (effetto libro) */
+  width: 2px; /* Larghezza del bordo destro */
+  height: 100%;
+  background: #a52222; /* Rosso leggermente diverso per il dorso esterno */
+  box-shadow: 2px 0 4px rgba(0,0,0,0.3);
+  z-index: 2;
+  pointer-events: none;
 }
