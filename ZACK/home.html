@@ -8,31 +8,44 @@
   <!-- Stili CSS in ordine di priorità -->
   <link rel="stylesheet" href="home.css">
   <link rel="stylesheet" href="sidebar/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   
   <!-- Script JavaScript in ordine di dipendenza -->
   <script src="vue.global.js"></script>
 </head>
 <body>
-  <!-- IMPORTANTE: Elemento effetto libro PRIMA dell'app Vue -->
-  <div id="book-effect"></div>
-  <!-- Elemento per il bordo destro della copertina -->
-  <div id="book-effect-right"></div>
-  
   <div id="app">
+    <!-- Pulsante toggle separato dalla sidebar, posizione fissa -->
+    <button 
+      id="sidebar-toggle" 
+      @click="toggleSidebarWidth"
+      aria-label="Restringi o espandi la barra laterale"
+      :style="{ left: isSidebarNarrow ? '4px' : '10px' }"
+    >
+      <i class="fas" :class="isSidebarNarrow ? 'fa-expand' : 'fa-compress'"></i>
+    </button>
+
     <!-- Sidebar laterale -->
-    <nav class="sidebar">
+    <nav class="sidebar" :class="{ 'narrow': isSidebarNarrow }">
+      <div v-if="!pagine.length" class="sidebar-loader">Caricamento...</div>
       <button
         v-for="(pagina, idx) in pagine"
         :key="idx"
+        :class="[
+          { active: paginaAttiva === idx, 'search-match': corrispondeRicerca(idx) },
+          { 'extended-content': pagina.nome.length > 30 }
+        ]"
+        :data-first-letter="pagina.nome.charAt(0)"
+        :data-text-length="pagina.nome.length > 20 ? 'long' : null"
         @click="vaiAllaPagina(idx)"
-        :class="{ 
-          'active': paginaAttiva === idx,
-          'search-match': corrispondeRicerca(idx)
-        }"
       >
         {{ pagina.nome }}
       </button>
     </nav>
+
+    <!-- ✅ SPOSTA QUI - Elementi effetto libro DOPO la sidebar -->
+    <div id="book-effect"></div>
+    <div id="book-effect-right"></div>
 
     <!-- Barra di ricerca sopra il contenuto -->
     <iframe
@@ -45,13 +58,11 @@
     <!-- Contenuto principale -->
     <main class="content">
       <iframe
-        v-if="paginaAttiva !== null"
-        :src="pagine[paginaAttiva]?.file"
         class="page-content"
-        title="Sottopagina"
+        :src="paginaAttiva !== null ? paginaCorrenteFile : ''"
         frameborder="0"
       ></iframe>
-      <div v-else class="page-title-preview">Seleziona una pagina</div>
+      <div v-if="paginaAttiva === null" class="page-title-preview">Seleziona una pagina</div>
     </main>
   </div>
   

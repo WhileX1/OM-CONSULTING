@@ -1,64 +1,472 @@
-/* Bottoni normali (default) */
+/* ================================================
+   1. STILI BASE E COMUNI
+   ================================================ */
+
+/* Base per tutti i bottoni */
 .sidebar button {
   position: relative;
-  width: 100%;
+  width: 180px;
+  max-width: 180px;
   left: 0;
-  background: url("sidebar.svg") no-repeat center/100% 100%;
   box-shadow: none;
   color: #e0e0e0;
   padding: 16px 24px;
   margin: 10px 15px 10px 10px;
   border: none;
-  font-size: 18px;      /* grandezza fissa */
+  font-size: 18px;
   cursor: pointer;
   transition:
-    background 0.2s,
-    border-color 0.2s,
-    color 0.2s,
-    transform 0.2s;
+    width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    max-width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    padding 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    background-color 0.2s,
+    box-shadow 0.3s ease;
   outline: none;
-}
-/* Bottoni hover/focus - rosso scuro */
-.sidebar button:hover,
-.sidebar button:focus {
-  background: url("sidebar-focus.svg") no-repeat center/100% 100%;
-  color: #fff;
-}
-/* Bottoni attivi normali - rosso acceso */
-.sidebar button.active:not(.search-match) {
-  background: url("sidebar-active.svg") no-repeat center/100% 100%;
-  color: #111;
-  font-weight: 500;
-}
-/* Bottoni risultato ricerca - solo bordo blu */
-.sidebar button.search-match:not(.active) {
-  background: url("sidebar-ricerca.svg") no-repeat center/100% 100%;
-}
-/* Bottoni risultato ricerca su hover/focus - sfondo blu scuro */
-.sidebar button.search-match:hover,
-.sidebar button.search-match:focus {
-  background: url("sidebar-ricerca-focus.svg") no-repeat center/100% 100%;
-  color: #fff;
-}
-/* Bottoni risultato ricerca E attivi - blu acceso */
-.sidebar button.active.search-match {
-  background: url("sidebar-ricerca-active.svg") no-repeat center/100% 100%;
-  color: #111;
-  font-weight: 500;
-}
-.sidebar button:focus,
-.sidebar button.active {
-  transform: translateY(-2px) scale(1.03) translateX(8px);
-}
-.sidebar button,
-.sidebar button.active,
-.sidebar button:hover,
-.sidebar button:focus {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  transform: none;
   font-family: inherit;
-  font-weight: 400; 
-  text-shadow: 0 0 1.5px #222, 0 0 0.5px #222;
+  font-weight: 400;
+  text-shadow: none;
 }
+
+/* Ferma l'animazione durante il click */
+.sidebar button:active {
+  animation: none;
+  transform: scale(0.98);
+}
+
+/* Stile per la page-title */
 .page-title {
   font-size: 60px;
   color: #222;
 }
+
+/* ================================================
+   2. MODALITÀ NARROW (MENU RISTRETTO)
+   ================================================ */
+
+/* Base per i pulsanti in modalità narrow */
+.sidebar.narrow button {
+  width: 46px;
+  color: transparent;
+  overflow: hidden;
+  text-align: center;
+  padding: 16px 0;
+  font-size: 18px;
+  position: relative;
+  margin-left: 0;
+  transition:
+    width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    max-width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 0.2s,
+    padding 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    background-color 0.2s,
+    box-shadow 0.3s ease;
+}
+
+/* Mostra solo la prima lettera in modalità narrow */
+.sidebar.narrow button::before {
+  content: attr(data-first-letter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e0e0e0;
+  font-size: 18px;
+}
+
+/* ================================================
+   3. PULSANTI STANDARD (ROSSI)
+   ================================================ */
+
+/* Stato normale */
+.sidebar button:not(.search-match) {
+  background: url("sidebar.svg") no-repeat center/100% 100%;
+}
+
+/* Stato normale in modalità narrow */
+.sidebar.narrow button:not(.search-match) {
+  background: url("sidebar.svg") no-repeat center/100% 100%;
+  color: transparent;
+}
+
+/* Hover/focus in modalità normale */
+.sidebar:not(.narrow) button:hover:not(.search-match),
+.sidebar:not(.narrow) button:focus:not(.search-match) {
+  background: url("sidebar-focus.svg") no-repeat center/100% 100%;
+  color: #fff;
+  width: fit-content;
+  min-width: 180px;
+  max-width: 300px;
+  padding-right: 30px;
+  z-index: 20;
+  box-shadow: none;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Hover/focus in modalità narrow */
+.sidebar.narrow button:hover:not(.search-match),
+.sidebar.narrow button:focus:not(.search-match) {
+  background: url("sidebar-focus.svg") no-repeat center/100% 100%;
+  color: #fff;
+  width: fit-content;
+  min-width: 43px;
+  max-width: 300px;
+  padding-left: 12px;
+  padding-right: 30px;
+  text-align: left;
+  z-index: 20;
+  box-shadow: none;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  box-sizing: border-box;
+}
+
+/* Stato attivo */
+.sidebar button.active:not(.search-match) {
+  background: url("sidebar-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  font-weight: 500;
+  width: 190px;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition:
+    width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    max-width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    padding 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    background-color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Stato attivo in modalità non-narrow */
+.sidebar:not(.narrow) button.active:not(.search-match) {
+  background: url("sidebar-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  font-weight: 500;
+  width: 190px;
+  max-width: 190px;
+  padding-right: 20px;
+  z-index: 20;
+  box-shadow: none;
+}
+
+/* Stato attivo in modalità narrow */
+.sidebar.narrow button.active:not(.search-match) {
+  width: 46px;
+  min-width: 46px;
+  max-width: 46px;
+  padding: 16px 0;
+  text-align: center;
+  color: transparent;
+  background: url("sidebar-active.svg") no-repeat center/100% 100%;
+  z-index: 20;
+  box-shadow: none;
+  overflow: hidden;
+  text-shadow: none;
+}
+
+/* Hover su pulsanti attivi in modalità normale */
+.sidebar:not(.narrow) button.active:not(.search-match):hover,
+.sidebar:not(.narrow) button.active:not(.search-match):focus {
+  background: url("sidebar-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  width: fit-content;
+  min-width: 190px;
+  max-width: 300px;
+  padding-right: 30px;
+  overflow: visible;
+  text-overflow: clip;
+  z-index: 30;
+  animation: buttonPulse 2s infinite;
+}
+
+/* Hover su pulsanti attivi in modalità narrow */
+.sidebar.narrow button.active:not(.search-match):hover,
+.sidebar.narrow button.active:not(.search-match):focus {
+  background: url("sidebar-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  width: fit-content;
+  min-width: 46px;
+  max-width: 300px;
+  padding-left: 12px;
+  padding-right: 30px;
+  text-align: left;
+  overflow: visible;
+  text-overflow: clip;
+  z-index: 30;
+  animation: buttonPulse 2s infinite;
+  box-sizing: border-box;
+}
+
+/* ================================================
+   4. PULSANTI RICERCA (BLU)
+   ================================================ */
+
+/* Stato normale */
+.sidebar button.search-match:not(.active) {
+  background: url("sidebar-ricerca.svg") no-repeat center/100% 100%;
+  border-left: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Stato normale in modalità narrow */
+.sidebar.narrow button.search-match:not(.active) {
+  background: url("sidebar-ricerca.svg") no-repeat center/100% 100%;
+  border-left: none;
+  color: transparent;
+}
+
+/* Prima lettera nel narrow non attivo */
+.sidebar.narrow button.search-match:not(.active)::before {
+  content: attr(data-first-letter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e0e0e0;
+  font-size: 18px;
+  font-weight: normal;
+  border-left: none;
+}
+
+/* Hover/focus in modalità normale */
+.sidebar:not(.narrow) button.search-match:hover,
+.sidebar:not(.narrow) button.search-match:focus {
+  background: url("sidebar-ricerca-focus.svg") no-repeat center/100% 100%;
+  color: #e0e0e0;
+  width: fit-content;
+  min-width: 180px;
+  max-width: 300px;
+  padding-right: 30px;
+  z-index: 20;
+  box-shadow: none;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Hover/focus in modalità narrow */
+.sidebar.narrow button.search-match:hover,
+.sidebar.narrow button.search-match:focus {
+  background: url("sidebar-ricerca-focus.svg") no-repeat center/100% 100%;
+  color: #e0e0e0;
+  width: fit-content;
+  min-width: 43px;
+  max-width: 300px;
+  padding-left: 12px;
+  padding-right: 30px;
+  text-align: left;
+  z-index: 20;
+  box-shadow: none;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  box-sizing: border-box;
+}
+
+/* Stato attivo */
+.sidebar button.active.search-match {
+  background: url("sidebar-ricerca-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  font-weight: 500;
+  width: 190px;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition:
+    width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    max-width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    padding 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    background-color 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Stato attivo in modalità narrow */
+.sidebar.narrow button.active.search-match {
+  width: 46px;
+  min-width: 46px;
+  max-width: 46px;
+  padding: 16px 0;
+  text-align: center;
+  color: transparent;
+  background: url("sidebar-ricerca-active.svg") no-repeat center/100% 100%;
+  z-index: 20;
+  box-shadow: none;
+  overflow: hidden;
+  text-shadow: none;
+}
+
+/* Lettera iniziale per pulsanti di ricerca attivi in narrow */
+.sidebar.narrow button.active.search-match::before {
+  content: attr(data-first-letter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 18px;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Hover/focus su pulsanti ricerca attivi in modalità normale */
+.sidebar:not(.narrow) button.active.search-match:hover,
+.sidebar:not(.narrow) button.active.search-match:focus {
+  background: url("sidebar-ricerca-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  width: fit-content;
+  min-width: 190px;
+  max-width: 300px;
+  padding-right: 30px;
+  overflow: visible;
+  text-overflow: clip;
+  z-index: 30;
+  animation: buttonPulse 2s infinite;
+}
+
+/* Hover/focus su pulsanti ricerca attivi in modalità narrow */
+.sidebar.narrow button.active.search-match:hover,
+.sidebar.narrow button.active.search-match:focus {
+  background: url("sidebar-ricerca-active.svg") no-repeat center/100% 100%;
+  color: #111;
+  width: fit-content;
+  min-width: 46px;
+  max-width: 300px;
+  padding-left: 12px;
+  padding-right: 30px;
+  text-align: left;
+  overflow: visible;
+  text-overflow: clip;
+  z-index: 30;
+  animation: buttonPulse 2s infinite;
+  box-sizing: border-box;
+}
+
+/* ================================================
+   5. GESTIONE HOVER COMUNE
+   ================================================ */
+
+/* Nasconde la lettera iniziale durante hover/focus per tutti i pulsanti narrow */
+.sidebar.narrow button:hover::before,
+.sidebar.narrow button:focus::before {
+  opacity: 0;
+  visibility: hidden;
+  display: none;
+  content: none;
+}
+
+/* Assicura che la lettera iniziale sia completamente nascosta per i pulsanti attivi ricerca in hover */
+.sidebar.narrow button.active.search-match:hover::before,
+.sidebar.narrow button.active.search-match:focus::before {
+  opacity: 0;
+  visibility: hidden;
+  display: none;
+  content: none;
+  position: absolute;
+  left: -9999px;
+  pointer-events: none;
+}
+
+/* Corregge la visualizzazione del testo nei pulsanti attivi ricerca in hover */
+.sidebar.narrow button.active.search-match:hover,
+.sidebar.narrow button.active.search-match:focus {
+  color: #111;
+  text-indent: 0;
+  letter-spacing: normal;
+  font-weight: 500;
+  padding-left: 12px;
+  text-align: left;
+}
+
+/* ================================================
+   6. GESTIONE PULSANTI ATTIVI IN NARROW
+   ================================================ */
+
+/* Visualizzazione lettera iniziale per pulsanti attivi */
+.sidebar.narrow button.active::before {
+  content: attr(data-first-letter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 18px;
+}
+
+/* ================================================
+   7. SPAZIATURA E FORMATTAZIONE ESTESA
+   ================================================ */
+
+/* Padding extra per testi lunghi - standardizzato per tutti i tipi di pulsanti */
+.sidebar button[data-text-length="long"]:hover,
+.sidebar button[data-text-length="long"]:focus {
+  padding-right: 40px;
+}
+
+/* Contenuto esteso per tutti i tipi di pulsanti */
+.sidebar button.extended-content:hover,
+.sidebar button.extended-content:focus {
+  padding-right: 46px;
+  max-width: 320px;
+}
+
+/* ================================================
+   8. ANIMAZIONI
+   ================================================ */
+
+/* Animazione pulsazione */
+@keyframes buttonPulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.03);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* ================================================
+   9. JAVASCRIPT SUPPORTO
+   ================================================ */
+
+/* Questi stili sono applicati automaticamente tramite JavaScript
+   utilizzando data-text-length="long" e class="extended-content"
+   
+   Lo script JS determina:
+   - data-text-length="long" per testi > 20 caratteri
+   - class="extended-content" per testi > 30 caratteri
+*/

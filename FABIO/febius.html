@@ -1,354 +1,377 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <title>Test JavaScript</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pannello Accessibilità FEBIUS</title>
+  
+  <!-- CSS Files -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    .access-btn {
-      font-size: 1.2em;
-      padding: 10px 20px;
-      margin: 20px;
-      cursor: pointer;
-    }
-    .access-panel {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 340px;
-      height: 340px;
-      transform: translate(-50%, -50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-    }
-    .hexagon-bg {
-      position: absolute;
-      width: 220px;
-      height: 220px;
-      background: #f0f0f0;
-      clip-path: polygon(
-        50% 0%,
-        93% 25%,
-        93% 75%,
-        50% 100%,
-        7% 75%,
-        7% 25%
-      );
-      z-index: 1;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-    .icon-menu {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      pointer-events: auto;
-      z-index: 2;
-    }
-    /* Posiziona i 6 bottoni ai vertici dell'esagono */
-    .icon-menu.hex-0 { transform: translate(-50%, -50%) rotate(0deg)    translateY(-110px) rotate(0deg);}
-    .icon-menu.hex-1 { transform: translate(-50%, -50%) rotate(60deg)   translateY(-110px) rotate(-60deg);}
-    .icon-menu.hex-2 { transform: translate(-50%, -50%) rotate(120deg)  translateY(-110px) rotate(-120deg);}
-    .icon-menu.hex-3 { transform: translate(-50%, -50%) rotate(180deg)  translateY(-110px) rotate(-180deg);}
-    .icon-menu.hex-4 { transform: translate(-50%, -50%) rotate(240deg)  translateY(-110px) rotate(-240deg);}
-    .icon-menu.hex-5 { transform: translate(-50%, -50%) rotate(300deg)  translateY(-110px) rotate(-300deg);}
-    .icon-menu button {
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      border: 2px solid #888;
-      background: #fff;
-      font-size: 1.6em;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: background 0.2s;
-    }
-    .icon-menu button.active {
-      background: #e0e0e0;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-      border-color: #555;
-    }
-    .icon-menu button:focus {
-      outline: 2px solid #0078d7;
-    }
-    .dropdown-menu {
-      position: absolute;
-      min-width: 140px;
-      z-index: 10;
-      padding: 10px;
-      border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      white-space: nowrap;
-      background: #fff;
-      border: 1px solid #ccc;
-    }
-    /* Posiziona le dropdown ai lati dell'esagono */
-    .dropdown-pos-0 { /* in alto */
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(0deg) translateY(-150px) rotate(0deg);
-    }
-    .dropdown-pos-1 {
-      left: 50%;
-      top: 50%;
-      /* Sposta la dropdown più lateralmente e leggermente più in alto */
-      transform: translate(-50%, -50%) rotate(60deg) translateY(-180px) translateX(40px) rotate(-60deg);
-    }
-    .dropdown-pos-2 {
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(120deg) translateY(-150px) rotate(-120deg);
-    }
-    .dropdown-pos-3 {
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(180deg) translateY(-150px) rotate(-180deg);
-    }
-    .dropdown-pos-4 {
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(240deg) translateY(-150px) rotate(-240deg);
-    }
-    .dropdown-pos-5 {
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) rotate(300deg) translateY(-150px) rotate(-300deg);
-    }
-    .icon-menu button.active,
-    .dropdown-menu button.active {
-      background: #d0d0d0;
-      border-color: #333;
-      color: #222;
-    }
-    .dropdown-menu button {
-      padding: 4px 10px;
-      border-radius: 4px;
-      border: 1px solid #aaa;
-      background: #f8f8f8;
-      cursor: pointer;
-      font-size: 0.95em;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .dropdown-menu button:not(.active):hover {
-      background: #ececec;
-      border-color: #888;
-    }
-
-    /* Simulazioni daltonismo (filtri CSS semplificati) */
-    .dalton-protanopia {
-      filter: grayscale(0.5) contrast(1.2) sepia(0.4) hue-rotate(-20deg);
-    }
-    .dalton-deuteranopia {
-      filter: grayscale(0.5) contrast(1.2) sepia(0.4) hue-rotate(20deg);
-    }
-    .dalton-tritanopia {
-      filter: grayscale(0.5) contrast(1.2) sepia(0.6) hue-rotate(90deg);
-    }
-
-    /* High contrast mode */
-    .high-contrast {
-      filter: contrast(2) brightness(1.1) !important;
-    }
-    /* Inverted colors mode */
-    .invert-colors {
-      filter: invert(1) hue-rotate(180deg) !important;
-    }
-    /* Underline links */
-    .underline-links a, .underline-links a:visited {
-      text-decoration: underline !important;
-    }
-  </style>
+  <link rel="stylesheet" href="css/cursor.css">
+  <link rel="stylesheet" href="css/febius.css">
+  
+  <!-- JavaScript Libraries -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  
+  <!-- Aggiungi questa riga nell'head per evitare problemi di cursore -->
+  <style>
+    /* Override immediato per cursore */
+    * { cursor: default !important; }
+    button, a, input[type="range"], input[type="checkbox"], select { cursor: pointer !important; }
+  </style>
 </head>
 <body>
   <div id="app">
-    <!-- Menu accessibilità (i 6 pulsanti) -->
-    <button @click="showPanel = !showPanel" class="access-btn">
+    <!-- Overlay scuro per lo sfondo -->
+    <div class="modal-overlay" :class="{ active: showPanel }"></div>
+    
+    <!-- Bottone principale -->
+    <button @click="showPanel = !showPanel" class="access-btn" :class="{ active: showPanel }">
       <i class="fa-solid fa-universal-access"></i> Accessibilità
     </button>
+    
     <!-- Wrapper filtrato -->
     <div id="dalton-wrapper">
-      <!-- ... -->
+      <h1>Pagina di Test Accessibilità</h1>
+      <p>Questa è una pagina di esempio per testare le funzionalità di accessibilità. Il pannello permette di personalizzare diversi aspetti dell'interfaccia utente per migliorare l'accessibilità.</p>
+      <p>Prova a utilizzare le diverse opzioni del pannello per vedere come cambiano gli elementi di questa pagina.</p>
+      <a href="#">Link di esempio</a>
     </div>
-    <div v-if="showPanel" class="access-panel">
+    
+    <!-- Pannello esagonale -->
+    <div v-show="showPanel" class="access-panel">
       <div class="hexagon-bg"></div>
-      <div v-for="(item, idx) in items" :key="idx" class="icon-menu" :class="'hex-' + idx">
+      
+      <!-- Bottone centrale per chiudere tutte -->
+      <div class="center-controls">
+        <button 
+          @click="closeAllModals" 
+          class="close-all-btn"
+          title="Chiudi tutte le modal"
+          v-show="openMenu.some(isOpen => isOpen)">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- Bottoni esagono -->
+      <div 
+        v-for="(item, idx) in items" 
+        :key="`hex-${idx}`"
+        class="icon-menu"
+        :class="`hex-${idx}`">
         <button 
           @click="toggleMenu(idx)" 
-          :class="{ active: openMenu[idx] }"
-        >
+          :class="{ active: openMenu[idx] }">
           <i :class="item.icon"></i>
         </button>
-        <div
-          v-if="openMenu[idx]"
-          class="dropdown-menu"
-          :class="dropdownPosition(idx)"
-        >
-          <!-- Daltonismo per idx === 0 -->
-          <p v-if="idx === 0" style="margin-bottom:16px; font-size:1.25em; font-weight:bold; text-align:center;">
-            Daltonismo
-          </p>
-          <div v-if="idx === 0" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
-            <!-- Prima riga: Protanopia, Deuteranopia, Tritanopia -->
-            <div style="display: flex; gap: 10px;">
-              <!-- Daltonismo -->
-              <button @click="setDaltonismo('protanopia')" :class="{ active: daltonismo === 'protanopia' }" title="Protanopia">
-                <i class="fa-solid fa-eye-slash" style="color:#c0392b"></i>
+      </div>
+      
+      <!-- Modal dropdown -->
+      <div 
+        v-for="(item, idx) in items" 
+        :key="`modal-${idx}`"
+        v-show="openMenu[idx]"
+        class="dropdown-menu"
+        :class="dropdownPosition(idx)">
+        
+        <!-- MODAL 0: Colori -->
+        <div v-if="idx === 0" class="color-controls">
+          <p class="dropdown-title">{{ item.menuTitle }}</p>
+          <!-- Prima riga di bottoni -->
+          <div class="daltonismo-row">
+            <button 
+              class="standard-btn" 
+              title="Normale"
+              @click="setColorTheme('default')">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button 
+              class="standard-btn" 
+              title="Alto contrasto"
+              @click="setColorTheme('highContrast')">
+              <i class="fa-solid fa-adjust"></i>
+            </button>
+            <button 
+              class="standard-btn" 
+              title="Tema scuro"
+              @click="setColorTheme('darkBlue')">
+              <i class="fa-solid fa-moon"></i>
+            </button>
+          </div>
+          <!-- Seconda riga di bottoni -->
+          <div class="daltonismo-row">
+            <button 
+              class="standard-btn" 
+              title="Protanopia">
+              <i class="fa-solid fa-circle" style="color: #ff6b6b;"></i>
+            </button>
+            <button 
+              class="standard-btn" 
+              title="Deuteranopia">
+              <i class="fa-solid fa-circle" style="color: #4ecdc4;"></i>
+            </button>
+            <button 
+              class="standard-btn" 
+              title="Inverti colori">
+              <i class="fa-solid fa-exchange-alt"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- MODAL 1: Testo -->
+        <div v-if="idx === 1" class="text-controls">
+          <p class="dropdown-title">{{ item.menuTitle }}</p>
+          <label class="spacing-control">
+            <i class="fa-solid fa-text-height"></i> Dimensione font
+            <input 
+              type="range" 
+              min="12" 
+              max="24" 
+              step="1" 
+              v-model="fontSize" 
+              @input="setFontSize"
+              class="spacing-slider">
+            <span>{{ fontSize }}px</span>
+          </label>
+          <label class="spacing-control">
+            <i class="fa-solid fa-text-width"></i> Spaziatura lettere
+            <input 
+              type="range" 
+              min="0" 
+              max="5" 
+              step="0.5" 
+              v-model="letterSpacing" 
+              @input="setLetterSpacing"
+              class="spacing-slider">
+            <span>{{ letterSpacing }}px</span>
+          </label>
+          <label class="checkbox-control">
+            <input 
+              type="checkbox" 
+              v-model="underlineLinks"
+              @change="setUnderlineLinks">
+            <i class="fa-solid fa-underline"></i> Sottolinea link
+          </label>
+        </div>
+        
+        <!-- MODAL 2: Sintesi vocale -->
+        <div v-if="idx === 2" class="audio-controls">
+          <p class="dropdown-title">{{ item.menuTitle }}</p>
+          <div class="audio-row">
+            <button 
+              class="audio-btn" 
+              title="Disattiva audio">
+              <i class="fa-solid fa-volume-mute"></i>
+            </button>
+            <button 
+              class="audio-btn" 
+              title="Sintesi vocale">
+              <i class="fa-solid fa-volume-up"></i>
+            </button>
+          </div>
+          <label class="spacing-control">
+            <i class="fa-solid fa-tachometer-alt"></i> Velocità sintesi
+            <input 
+              type="range" 
+              min="0.5" 
+              max="2.0" 
+              step="0.1" 
+              value="1.0"
+              class="spacing-slider">
+            <span>1.0x</span>
+          </label>
+          <label class="checkbox-control">
+            <input 
+              type="checkbox">
+            <i class="fa-solid fa-highlighter"></i> Evidenzia testo
+          </label>
+          <div style="margin-top: 10px; text-align: center;">
+            <button class="standard-btn" style="width: 100%;">
+              <i class="fa-solid fa-play"></i> Test sintesi
+            </button>
+          </div>
+        </div>
+        
+        <!-- MODAL 3: Cursore -->
+        <div v-if="idx === 3" class="cursor-controls">
+          <p class="dropdown-title">{{ item.menuTitle }}</p>
+          <div class="cursor-row">
+            <button 
+              class="cursor-btn" 
+              :class="{ active: cursorType === 'normal' }" 
+              @click="setCursorType('normal')"
+              title="Cursore normale">
+              <i class="fa-solid fa-mouse-pointer"></i>
+            </button>
+            <button 
+              class="cursor-btn" 
+              :class="{ active: cursorType === 'large' }" 
+              @click="setCursorType('large')"
+              title="Cursore grande">
+              <i class="fa-solid fa-expand"></i>
+            </button>
+            <button 
+              class="cursor-btn" 
+              :class="{ active: cursorType === 'cross' }" 
+              @click="setCursorType('cross')"
+              title="Cursore a croce">
+              <i class="fa-solid fa-crosshairs"></i>
+            </button>
+          </div>
+          <label class="spacing-control">
+            <i class="fa-solid fa-search-plus"></i> Dimensione
+            <input 
+              type="range" 
+              min="1" 
+              max="5" 
+              step="1" 
+              v-model="cursorSize" 
+              @input="setCursorSize"
+              class="spacing-slider">
+            <span>{{ cursorSize }}x</span>
+          </label>
+          <div class="color-controls">
+            <label class="color-label">
+              <i class="fa-solid fa-palette"></i> Colore cursore
+            </label>
+            <div class="color-row-inline">
+              <button 
+                class="color-btn" 
+                :class="{ active: cursorColor === 'default' }" 
+                @click="setCursorColor('default')"
+                title="Bianco">
+                <i class="fa-solid fa-circle" style="color: white;"></i>
               </button>
-              <button @click="setDaltonismo('deuteranopia')" :class="{ active: daltonismo === 'deuteranopia' }" title="Deuteranopia">
-                <i class="fa-solid fa-eye" style="color:#27ae60"></i>
+              <button 
+                class="color-btn" 
+                :class="{ active: cursorColor === 'blue' }" 
+                @click="setCursorColor('blue')"
+                title="Blu">
+                <i class="fa-solid fa-circle" style="color: #0078d4;"></i>
               </button>
-              <button @click="setDaltonismo('tritanopia')" :class="{ active: daltonismo === 'tritanopia' }" title="Tritanopia">
-                <i class="fa-solid fa-eye" style="color:#2980b9"></i>
+              <button 
+                class="color-btn" 
+                :class="{ active: cursorColor === 'red' }" 
+                @click="setCursorColor('red')"
+                title="Rosso">
+                <i class="fa-solid fa-circle" style="color: #d13438;"></i>
               </button>
-            </div>
-            <!-- Seconda riga: Normale, Contrasto elevato, Inversione colori -->
-            <div style="display: flex; gap: 10px; margin-top: 8px;">
-              <!-- Normale -->
-              <button @click="setDaltonismo(null)" :class="{ active: !daltonismo }" title="Normale">
-                <i class="fa-solid fa-droplet-slash"></i>
+              <button 
+                class="color-btn" 
+                :class="{ active: cursorColor === 'green' }" 
+                @click="setCursorColor('green')"
+                title="Verde">
+                <i class="fa-solid fa-circle" style="color: #107c10;"></i>
               </button>
-              <!-- Contrasto elevato -->
-              <button @click="toggleHighContrast" :class="{ active: highContrast }" title="Contrasto elevato">
-                <i class="fa-solid fa-fill-drip"></i>
+              <button 
+                class="color-btn" 
+                :class="{ active: cursorColor === 'purple' }" 
+                @click="setCursorColor('purple')"
+                title="Viola">
+                <i class="fa-solid fa-circle" style="color: #881798;"></i>
               </button>
-              <!-- Inversione colori -->
-              <button @click="toggleInvertColors" :class="{ active: invertColors }" title="Inversione colori">
-                <i class="fa-solid fa-adjust"></i>
+              <button 
+                class="color-btn" 
+                :class="{ active: cursorColor === 'orange' }" 
+                @click="setCursorColor('orange')"
+                title="Arancione">
+                <i class="fa-solid fa-circle" style="color: #ff8c00;"></i>
               </button>
             </div>
           </div>
-          <!-- Visibilità per idx === 1 -->
-          <div v-if="idx === 1" style="min-width:220px;">
-            <p style="margin-bottom:12px; font-size:1.25em; font-weight:bold; text-align:center;">
-              Visibilità
-            </p>
-            <label style="display:block; text-align:center; margin-bottom:8px;">
-              <span style="font-size:1.1em;">Dimensione carattere</span>
-            </label>
-            <input
-              type="range"
-              min="12"
-              max="32"
-              v-model="fontSize"
-              @input="setFontSize"
-              style="width: 100%;"
-            />
-            <div style="text-align:center; font-size:1.1em; margin-top:4px;">
-              <span style="margin-left:8px;">{{ fontSize }}px</span>
+          <label class="checkbox-control">
+            <input 
+              type="checkbox" 
+              v-model="trackCursor"
+              @change="toggleCursorTracking">
+            <i class="fa-solid fa-route"></i> Traccia movimenti
+          </label>
+        </div>
+        
+        <!-- MODAL 4: Navigazione tastiera -->
+        <div v-if="idx === 4" class="keyboard-controls">
+          <p class="dropdown-title">{{ item.menuTitle }}</p>
+          <div class="kbd-row">
+            <button 
+              class="kbd-btn" 
+              title="Navigazione normale">
+              <i class="fa-solid fa-keyboard"></i>
+            </button>
+            <button 
+              class="kbd-btn" 
+              title="Focus avanzato">
+              <i class="fa-solid fa-hand-pointer"></i>
+            </button>
+          </div>
+          <label class="checkbox-control">
+            <input type="checkbox">
+            <i class="fa-solid fa-border-style"></i> Bordi visibili
+          </label>
+          <label class="spacing-control">
+            <i class="fa-solid fa-border-all"></i> Spessore bordi
+            <input 
+              type="range" 
+              min="1" 
+              max="5" 
+              step="1" 
+              value="2"
+              class="spacing-slider">
+            <span>2px</span>
+          </label>
+          <label class="checkbox-control">
+            <input type="checkbox" checked>
+            <i class="fa-solid fa-fast-forward"></i> Link skip
+          </label>
+          <div class="kbd-help" style="margin-top: 10px; font-size: 0.8em; color: #ccc; text-align: center;">
+            Usa <kbd style="background: #444; padding: 2px 5px; border-radius: 3px;">Tab</kbd> per navigare, 
+            <kbd style="background: #444; padding: 2px 5px; border-radius: 3px;">Enter</kbd> per selezionare
+          </div>
+        </div>
+        
+        <!-- MODAL 5: Lingua -->
+        <div v-if="idx === 5" class="language-controls">
+          <p class="dropdown-title">{{ item.menuTitle }}</p>
+          <div class="lang-row">
+            <button 
+              class="lang-btn" 
+              title="Italiano">
+              🇮🇹
+            </button>
+            <button 
+              class="lang-btn"
+              title="English">
+              🇬🇧
+            </button>
+            <button 
+              class="lang-btn"
+              title="Français">
+              🇫🇷
+            </button>
+          </div>
+          <label class="checkbox-control">
+            <input type="checkbox">
+            <i class="fa-solid fa-language"></i> Traduzione automatica
+          </label>
+          <label class="checkbox-control">
+            <input type="checkbox" checked>
+            <i class="fa-solid fa-calendar-alt"></i> Formato data locale
+          </label>
+          <div style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.1); border-radius: 5px; font-size: 0.9em;">
+            <div style="margin-bottom: 5px;">
+              <i class="fa-solid fa-info-circle" style="color: var(--modal-secondary-color);"></i> 
+              Lingua attiva: <strong>Italiano</strong>
             </div>
-            <hr style="margin:12px 0;">
-            <div style="display:flex; flex-direction:column; gap:8px;">
-              <label>
-                <input type="checkbox" v-model="highContrast" @change="setHighContrast">
-                Contrasto elevato
-              </label>
-              <label>
-                <input type="checkbox" v-model="invertColors" @change="setInvertColors">
-                Inversione colori
-              </label>
-              <label>
-                Spaziatura testo
-                <input type="range" min="0" max="0.3" step="0.01" v-model="letterSpacing" @input="setLetterSpacing" style="width:90px; margin-left:8px;">
-                <span>{{ (letterSpacing * 100).toFixed(0) }}%</span>
-              </label>
-              <label>
-                <input type="checkbox" v-model="underlineLinks" @change="setUnderlineLinks">
-                Sottolinea i link
-              </label>
+            <div>
+              Data: <span>20/06/2025</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <script>
-    const { createApp } = Vue;
-    createApp({
-      data() {
-        return {
-          showPanel: false,
-          openMenu: [false, false, false, false, false, false],
-          daltonismo: null,
-          fontSize: 16,
-          highContrast: false,
-          invertColors: false,
-          letterSpacing: 0,
-          underlineLinks: false,
-          items: [
-            {
-              icon: 'fa-solid fa-palette', // Solo la palette!
-              menuTitle: 'Colori',
-              options: []
-            },
-            {
-              icon: 'fa-solid fa-font',
-              menuTitle: 'Dimensione testo',
-              options: ['Piccolo', 'Medio', 'Grande']
-            },
-            {
-              icon: 'fa-solid fa-volume-up',
-              menuTitle: 'Sintesi vocale',
-              options: ['Attiva', 'Disattiva']
-            },
-            {
-              icon: 'fa-solid fa-mouse-pointer',
-              menuTitle: 'Cursore',
-              options: ['Normale', 'Grande', 'Colorato']
-            },
-            {
-              icon: 'fa-solid fa-keyboard',
-              menuTitle: 'Navigazione tastiera',
-              options: ['Attiva', 'Disattiva']
-            },
-            {
-              icon: 'fa-solid fa-language',
-              menuTitle: 'Lingua',
-              options: ['Italiano', 'English', 'Español']
-            }
-          ]
-        }
-      },
-      methods: {
-        toggleMenu(idx) {
-          this.openMenu[idx] = !this.openMenu[idx];
-        },
-        dropdownPosition(idx) {
-          return `dropdown-pos-${idx}`;
-        },
-        setDaltonismo(type) {
-          this.daltonismo = type;
-          const wrapper = document.getElementById('dalton-wrapper');
-          wrapper.classList.remove('dalton-protanopia', 'dalton-deuteranopia', 'dalton-tritanopia');
-          if (type) {
-            wrapper.classList.add('dalton-' + type);
-          }
-        },
-        setFontSize() {
-          document.documentElement.style.fontSize = this.fontSize + 'px';
-        },
-        setHighContrast() {
-          const wrapper = document.getElementById('dalton-wrapper');
-          wrapper.classList.toggle('high-contrast', this.highContrast);
-        },
-        setInvertColors() {
-          const wrapper = document.getElementById('dalton-wrapper');
-          wrapper.classList.toggle('invert-colors', this.invertColors);
-        },
-        setLetterSpacing() {
-          document.body.style.letterSpacing = this.letterSpacing + 'em';
-        },
-        setUnderlineLinks() {
-          if (this.underlineLinks) {
-            document.body.classList.add('underline-links');
-          } else {
-            document.body.classList.remove('underline-links');
-          }
-        }
-      }
-    }).mount('#app');
-  </script>
+  
+  <!-- JavaScript Files -->
+  <script src="js/cursor.js"></script>
+  <script src="js/febius.js"></script>
 </body>
 </html>

@@ -1,0 +1,736 @@
+/* ========================================
+   VARIABILI CSS GLOBALI - SISTEMA DI COLORI
+======================================== */
+
+:root {
+  /* Colori tema base - MODIFICA QUESTI PER CAMBIARE IL TEMA */
+  --theme-primary: #30d654;          /* Colore principale tema (verde) */
+  --theme-primary-rgb: 48, 214, 84;  /* Componenti RGB del colore primario */
+  --theme-secondary: #ffffff;        /* Colore secondario tema (bianco) */
+  --theme-secondary-rgb: 255, 255, 255;
+  --theme-dark: #1a1a1a;             /* Colore scuro tema (nero) */
+  --theme-dark-rgb: 26, 26, 26;
+  --theme-alert: #ff4444;            /* Colore di allerta (rosso) */
+  --theme-alert-rgb: 255, 68, 68;
+  --theme-focus: #00ff88;            /* Colore di focus (verde brillante) */
+  --theme-focus-rgb: 0, 255, 136;
+  --theme-link: #0078d4;             /* Colore link (blu) */
+  
+  /* Colori derivati - NON MODIFICARE DIRETTAMENTE */
+  --modal-primary-color: var(--theme-secondary);
+  --modal-primary-rgba: var(--theme-secondary-rgb);
+  --modal-secondary-color: var(--theme-primary);
+  --modal-secondary-rgba: var(--theme-primary-rgb);
+  
+  /* Colori sfondo derivati */
+  --bg-dark-1: var(--theme-dark);
+  --bg-dark-2: #2d2d2d; /* Versione più chiara del tema scuro */
+  --bg-light: #f5f5f5;  /* Grigio chiaro per sfondi */
+  --bg-white: var(--theme-secondary);
+  
+  /* Colori testo derivati */
+  --text-dark: #333333;
+  --text-medium: #555555;
+  --text-light: var(--theme-secondary);
+  
+  /* Colori bottoni derivati */
+  --btn-close-primary: var(--theme-alert);
+  --btn-close-secondary: #cc0000; /* Versione scura del tema allerta */
+  --btn-close-rgba: var(--theme-alert-rgb);
+  
+  /* Colori di stato derivati */
+  --focus-color: var(--theme-focus);
+  --focus-rgba: var(--theme-focus-rgb);
+  --link-color: var(--theme-link);
+  
+  /* Intensità effetti */
+  --modal-glow-light: 0.3;
+  --modal-glow-medium: 0.5;
+  --modal-glow-strong: 0.8;
+  
+  /* Scale interfaccia */
+  --interface-scale: 1;
+  --modal-scale: 1;
+  --font-scale: 1;
+  
+  /* Bordi e raggi */
+  --border-radius-sm: 5px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-round: 50%;
+  --border-width: 2px;
+}
+
+/* ========================================
+   RESET E BASE
+======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-light);
+  color: var(--text-dark);
+  overflow-x: hidden;
+}
+
+/* ========================================
+   STILE BOTTONE GLOBALE (Base per tutti i bottoni)
+======================================== */
+
+.btn-base {
+  border-radius: var(--border-radius-md);
+  background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  border: var(--border-width) solid var(--modal-primary-color);
+  color: var(--modal-primary-color);
+  box-shadow: 
+    0 0 20px rgba(var(--modal-primary-rgba), 0.4),
+    inset 0 0 10px rgba(var(--modal-primary-rgba), 0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.btn-base:hover {
+  transform: scale(1.05) translateY(-2px);
+  border-color: var(--modal-secondary-color);
+  color: var(--modal-secondary-color);
+  box-shadow: 
+    0 0 30px rgba(var(--modal-secondary-rgba), 0.6),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.2);
+}
+
+.btn-base.active {
+  background: linear-gradient(135deg, var(--modal-primary-color), var(--modal-secondary-color));
+  color: var(--bg-dark-1);
+  border: var(--border-width) solid var(--bg-white);
+  transform: scale(1.05);
+}
+
+/* ========================================
+   BOTTONE PRINCIPALE ACCESSIBILITÀ
+======================================== */
+
+.access-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 0.625rem 0.9375rem; /* Convertito da 10px 15px a rem */
+  font-size: 1em;
+  gap: 8px;
+  z-index: 9999;
+  /* Eredita stile base */
+  border-radius: var(--border-radius-md);
+  background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  border: var(--border-width) solid var(--modal-primary-color);
+  color: var(--modal-primary-color);
+  box-shadow: 
+    0 0 20px rgba(var(--modal-primary-rgba), 0.4),
+    inset 0 0 10px rgba(var(--modal-primary-rgba), 0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.access-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  border-color: var(--modal-secondary-color);
+  color: var(--modal-secondary-color);
+  box-shadow: 
+    0 0 30px rgba(var(--modal-secondary-rgba), 0.6),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.2);
+}
+
+.access-btn.active {
+  background: linear-gradient(135deg, var(--modal-primary-color), var(--modal-secondary-color));
+  color: var(--bg-dark-1);
+  border: var(--border-width) solid var(--bg-white);
+  transform: scale(1.05);
+}
+
+.access-btn i {
+  font-size: 1.2em;
+  margin-right: 2px;
+}
+
+/* ========================================
+   OVERLAY MODAL
+======================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0);
+  z-index: 999;
+  pointer-events: none;
+  transition: background 0.5s ease;
+}
+
+.modal-overlay.active {
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+}
+
+/* ========================================
+   PANNELLO ESAGONALE
+======================================== */
+
+.access-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 340px;
+  height: 340px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 1000;
+}
+
+/* Esagono di sfondo */
+.hexagon-bg {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 
+    inset 0 0 25px rgba(var(--modal-primary-rgba), 0.3),
+    0 0 35px rgba(var(--modal-secondary-rgba), 0.4);
+  border: var(--border-width) solid rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   CONTROLLI CENTRALI
+======================================== */
+
+.center-controls {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.close-all-btn {
+  width: 2.75rem;  /* Convertito da 44px a rem */
+  height: 2.75rem; /* Convertito da 44px a rem */
+  border-radius: var(--border-radius-round);
+  border: var(--border-width) solid var(--btn-close-primary);
+  background: linear-gradient(135deg, var(--btn-close-primary), var(--btn-close-secondary));
+  color: var(--bg-white);
+  font-size: 1.2em;
+  box-shadow: 
+    0 0 15px rgba(var(--btn-close-rgba), 0.4),
+    inset 0 0 10px rgba(var(--btn-close-rgba), 0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer !important;
+}
+
+.close-all-btn:hover {
+  border-color: var(--btn-close-primary);
+  background: linear-gradient(135deg, var(--btn-close-primary), var(--btn-close-secondary));
+  box-shadow: 
+    0 0 25px rgba(var(--btn-close-rgba), 0.6),
+    inset 0 0 15px rgba(var(--btn-close-rgba), 0.2);
+  transform: scale(1.1) translateY(-2px);
+}
+
+/* ========================================
+   BOTTONI ESAGONO
+======================================== */
+
+.access-panel .icon-menu {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* Stile bottoni - Ora usando lo stesso stile del bottone accessibilità */
+.access-panel .icon-menu button {
+  width: 3.375rem;  /* Convertito da 54px a rem */
+  height: 3.375rem; /* Convertito da 54px a rem */
+  border-radius: var(--border-radius-round);
+  border: var(--border-width) solid var(--modal-primary-color);
+  background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  color: var(--modal-primary-color);
+  font-size: 1.6em;
+  box-shadow: 
+    0 0 15px rgba(var(--modal-primary-rgba), 0.4),
+    inset 0 0 10px rgba(var(--modal-primary-rgba), 0.1);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer !important;
+}
+
+/* Posizioni bottoni esagono */
+.access-panel .icon-menu.hex-0 { 
+  transform: translate(-50%, -50%) rotate(0deg) translateY(-115px) rotate(0deg); 
+}
+.access-panel .icon-menu.hex-1 { 
+  transform: translate(-50%, -50%) rotate(60deg) translateY(-115px) rotate(-60deg); 
+}
+.access-panel .icon-menu.hex-2 { 
+  transform: translate(-50%, -50%) rotate(120deg) translateY(-115px) rotate(-120deg); 
+}
+.access-panel .icon-menu.hex-3 { 
+  transform: translate(-50%, -50%) rotate(180deg) translateY(-115px) rotate(-180deg); 
+}
+.access-panel .icon-menu.hex-4 { 
+  transform: translate(-50%, -50%) rotate(240deg) translateY(-115px) rotate(-240deg); 
+}
+.access-panel .icon-menu.hex-5 { 
+  transform: translate(-50%, -50%) rotate(300deg) translateY(-115px) rotate(-300deg); 
+}
+
+/* Hover e active states uniformati con il bottone accessibilità */
+.access-panel .icon-menu button:hover {
+  transform: scale(1.05) translateY(-3px);
+  border-color: var(--modal-secondary-color);
+  color: var(--modal-secondary-color);
+  box-shadow: 
+    0 0 20px rgba(var(--modal-secondary-rgba), 0.6),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.2);
+}
+
+.access-panel .icon-menu button.active {
+  background: linear-gradient(135deg, var(--modal-primary-color), var(--modal-secondary-color));
+  color: var(--bg-dark-1); /* Testo scuro per miglior contrasto */
+  border: var(--border-width) solid var(--bg-white);
+  box-shadow: 
+    0 0 25px rgba(var(--modal-secondary-rgba), 0.7),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.3);
+  animation: hexBtnPulse 1.5s infinite alternate;
+}
+
+/* Aggiorna anche l'animazione per mantenere il gradient durante la pulsazione */
+@keyframes hexBtnPulse {
+  0% { 
+    transform: scale(1);
+    box-shadow: 
+      0 0 20px rgba(var(--modal-secondary-rgba), 0.5),
+      inset 0 0 10px rgba(var(--modal-secondary-rgba), 0.2);
+  }
+  100% { 
+    transform: scale(1.1);
+    box-shadow: 
+      0 0 30px rgba(var(--modal-secondary-rgba), 0.8),
+      inset 0 0 20px rgba(var(--modal-secondary-rgba), 0.4);
+  }
+}
+
+/* ========================================
+   DROPDOWN MODAL
+======================================== */
+
+.access-panel .dropdown-menu {
+  position: fixed;
+  width: 280px;
+  min-height: 200px;        /* Altezza minima per consistenza visiva */
+  max-height: 400px;        /* Altezza massima per evitare modal troppo lunghe */
+  height: auto;             /* Permette l'adattamento al contenuto */
+  padding: 1.2rem;
+  border-radius: var(--border-radius-md);
+  box-shadow: 
+    0 0 30px rgba(var(--modal-primary-rgba), var(--modal-glow-light)),
+    0 0 40px rgba(var(--modal-secondary-rgba), 0.2);
+  background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  border: var(--border-width) solid var(--modal-primary-color);
+  color: var(--modal-primary-color);
+  font-size: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  display: block !important;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.5), 
+              opacity 0.35s ease,
+              box-shadow 0.35s ease,
+              visibility 0s;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.95); /* Base transform */
+  transform-origin: center center;
+}
+
+/* Posizioni dropdown calcolate dal centro - MODAL 0 E 3 AVVICINATE */
+.access-panel .dropdown-menu.dropdown-pos-0 { 
+  z-index: 1010 !important;
+  left: calc(50% + 0px);
+  top: calc(50% - 300px);   /* Ridotto da -360px a -300px */
+}
+
+.access-panel .dropdown-menu.dropdown-pos-1 { 
+  z-index: 1011 !important;
+  left: calc(50% + 309px); /* Ridotto da 329px a 309px */
+  top: calc(50% - 170px);  /* Ridotto da -190px a -170px */
+}
+
+.access-panel .dropdown-menu.dropdown-pos-2 { 
+  z-index: 1012 !important;
+  left: calc(50% + 309px); /* Ridotto da 329px a 309px */
+  top: calc(50% + 170px);  /* Ridotto da +190px a +170px */
+}
+
+.access-panel .dropdown-menu.dropdown-pos-3 { 
+  z-index: 1013 !important;
+  left: calc(50% + 0px);
+  top: calc(50% + 300px);  /* Ridotto da +360px a +300px */
+}
+
+.access-panel .dropdown-menu.dropdown-pos-4 { 
+  z-index: 1014 !important;
+  left: calc(50% - 309px); /* Ridotto da -329px a -309px */
+  top: calc(50% + 170px);  /* Ridotto da +190px a +170px */
+}
+
+.access-panel .dropdown-menu.dropdown-pos-5 { 
+  z-index: 1015 !important;
+  left: calc(50% - 309px); /* Ridotto da -329px a -309px */
+  top: calc(50% - 170px);  /* Ridotto da -190px a -170px */
+}
+
+/* Stato attivo - Aggiorna transform per includere translate */
+.access-panel .dropdown-menu.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, -50%) scale(1) !important; /* Modificato per mantenere centratura */
+  z-index: 2000 !important;
+  box-shadow: 
+    0 0 40px rgba(var(--modal-primary-rgba), var(--modal-glow-medium)),
+    0 0 50px rgba(var(--modal-secondary-rgba), 0.3) !important;
+}
+
+/* ========================================
+   CONTROLLI MODAL - TITOLI
+======================================== */
+
+.dropdown-title {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 0 0 1rem 0;
+  color: var(--modal-primary-color);
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================
+   CONTROLLI MODAL - BOTTONI
+======================================== */
+
+/* Bottoni nelle modal - Fix dimensioni quadrate */
+.standard-btn,
+.cursor-btn,
+.audio-btn,
+.kbd-btn,
+.lang-btn,
+.color-btn {
+  height: 2.75rem;       /* Convertito da 44px a rem */
+  width: 2.75rem;        /* Convertito da 44px a rem */
+  min-width: 2.75rem;    /* Convertito da 44px a rem */
+  min-height: 2.75rem;   /* Convertito da 44px a rem */
+  max-width: 2.75rem;    /* Convertito da 44px a rem */
+  max-height: 2.75rem;   /* Convertito da 44px a rem */
+  font-size: 1.2em;
+  border-radius: 8px;
+  border: var(--border-width) solid var(--modal-primary-color);
+  background: linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+  color: var(--modal-primary-color);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0.25rem;      /* Aumentato leggermente il margine */
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;       /* Impedisce qualsiasi cambiamento di dimensione */
+  cursor: pointer !important;
+  box-shadow: 
+    0 0 15px rgba(var(--modal-primary-rgba), 0.3),
+    inset 0 0 10px rgba(var(--modal-primary-rgba), 0.1);
+}
+
+/* Hover come il bottone accessibilità */
+.standard-btn:hover,
+.cursor-btn:hover,
+.audio-btn:hover,
+.kbd-btn:hover,
+.lang-btn:hover,
+.color-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  border-color: var(--modal-secondary-color);
+  color: var(--modal-secondary-color);
+  box-shadow: 
+    0 0 20px rgba(var(--modal-secondary-rgba), 0.5),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.2);
+}
+
+/* Stato attivo corretto e definitivo per i bottoni nelle modal */
+.standard-btn.active,
+.cursor-btn.active,
+.audio-btn.active,
+.kbd-btn.active,
+.lang-btn.active,
+.color-btn.active {
+  background: linear-gradient(135deg, var(--modal-primary-color), var(--modal-secondary-color)) !important;
+  color: var(--bg-dark-1) !important;
+  border: var(--border-width) solid var(--bg-white) !important;
+  box-shadow: 
+    0 0 25px rgba(var(--modal-secondary-rgba), 0.7),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.3) !important;
+  animation: hexBtnPulse 1.5s infinite alternate !important;
+}
+
+/* ========================================
+   LAYOUT BOTTONI NELLE MODAL - FORMA COSTANTE
+======================================== */
+
+/* Mantieni i bottoni in riga e con forma costante */
+.daltonismo-row,
+.cursor-row,
+.audio-row,
+.kbd-row,
+.lang-row {
+  display: flex;
+  flex-wrap: wrap; /* Permette di andare a capo se necessario */
+  gap: 0.5rem;  /* Convertito da 8px a rem */
+  margin: 0.8rem 0;
+  justify-content: center; /* Centra i bottoni */
+  align-items: center;
+}
+
+/* Assicura che tutti i bottoni occupino lo stesso spazio */
+.standard-btn,
+.cursor-btn,
+.audio-btn,
+.kbd-btn,
+.lang-btn,
+.color-btn {
+  height: 2.75rem;       /* Convertito da 44px a rem */
+  width: 2.75rem;        /* Convertito da 44px a rem */
+  min-width: 2.75rem;    /* Convertito da 44px a rem */
+  min-height: 2.75rem;   /* Convertito da 44px a rem */
+  max-width: 2.75rem;    /* Convertito da 44px a rem */
+  max-height: 2.75rem;   /* Convertito da 44px a rem */
+  flex: 0 0 auto;
+  /* Resto delle proprietà esistenti */
+}
+
+/* Mantenimento della forma in hover/active */
+.standard-btn:hover,
+.cursor-btn:hover,
+.audio-btn:hover,
+.kbd-btn:hover,
+.lang-btn:hover,
+.color-btn:hover {
+  transform: scale(1.05); /* ⚠️ Rimosso translateY per mantenere posizionamento */
+  border-color: var(--modal-secondary-color);
+  color: var(--modal-secondary-color);
+  box-shadow: 
+    0 0 20px rgba(var(--modal-secondary-rgba), 0.5),
+    inset 0 0 15px rgba(var(--modal-secondary-rgba), 0.2);
+}
+
+/* Fix per la riga dei colori */
+.color-row-inline {
+  display: flex;
+  flex-wrap: nowrap; /* ⚠️ Impedisce il wrapping */
+  gap: 5px;
+  margin: 0.8rem 0;
+  justify-content: flex-start;
+  overflow-x: auto; /* ⚠️ Consente scrolling se necessario */
+  padding-bottom: 5px;
+}
+
+/* ========================================
+   FIX LAYOUT MODAL 1 (CONTROLLI TESTO)
+======================================== */
+
+/* Miglioramenti specifici per la modal dei controlli del testo */
+.text-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 5px 0;
+}
+
+/* Titolo più compatto */
+.text-controls .dropdown-title {
+  margin-bottom: 15px;
+}
+
+/* Miglioramento spacing control */
+.text-controls .spacing-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0;
+}
+
+/* Etichetta più chiara */
+.text-controls .spacing-control > i {
+  margin-right: 8px;
+  width: 20px;
+  text-align: center;
+  color: var(--modal-secondary-color);
+}
+
+/* Controllo slider più ampio e preciso */
+.text-controls .spacing-slider {
+  width: 100%;
+  margin: 8px 0;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(var(--modal-primary-rgba), 0.2);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Stile thumb dello slider */
+.text-controls .spacing-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--modal-secondary-color);
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.text-controls .spacing-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--modal-secondary-color);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Valore numerico */
+.text-controls .spacing-control span {
+  align-self: flex-end;
+  font-weight: bold;
+  color: var(--modal-primary-color);
+}
+
+/* Checkbox control migliorato */
+.text-controls .checkbox-control {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+/* Stile checkbox */
+.text-controls .checkbox-control input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  accent-color: var(--modal-secondary-color);
+}
+
+/* Etichetta checkbox */
+.text-controls .checkbox-control i {
+  margin-right: 8px;
+  color: var(--modal-secondary-color);
+}
+
+/* ========================================
+   BOTTONI SENSIBILI ALLO ZOOM DEL CARATTERE
+======================================== */
+
+/* Bottone principale accessibilità */
+.access-btn {
+  padding: 0.625rem 0.9375rem; /* Convertito da 10px 15px a rem */
+  font-size: 1em;
+  /* Resto delle proprietà esistenti */
+}
+
+/* Bottone chiudi tutto */
+.close-all-btn {
+  width: 2.75rem;  /* Convertito da 44px a rem */
+  height: 2.75rem; /* Convertito da 44px a rem */
+  font-size: 1.2em;
+  /* Resto delle proprietà esistenti */
+}
+
+/* Bottoni esagono */
+.access-panel .icon-menu button {
+  width: 3.375rem;  /* Convertito da 54px a rem */
+  height: 3.375rem; /* Convertito da 54px a rem */
+  font-size: 1.6em;
+  /* Resto delle proprietà esistenti */
+}
+
+/* Bottoni nelle modal */
+.standard-btn,
+.cursor-btn,
+.audio-btn,
+.kbd-btn,
+.lang-btn,
+.color-btn {
+  height: 2.75rem;       /* Convertito da 44px a rem */
+  width: 2.75rem;        /* Convertito da 44px a rem */
+  min-width: 2.75rem;    /* Convertito da 44px a rem */
+  min-height: 2.75rem;   /* Convertito da 44px a rem */
+  max-width: 2.75rem;    /* Convertito da 44px a rem */
+  max-height: 2.75rem;   /* Convertito da 44px a rem */
+  font-size: 1.2em;
+  /* Resto delle proprietà esistenti */
+}
+
+/* Bordatura e spaziature */
+:root {
+  --border-width: 0.125rem; /* Convertito da 2px a rem */
+  --border-radius-sm: 0.3125rem; /* Convertito da 5px a rem */
+  --border-radius-md: 0.5rem;    /* Convertito da 8px a rem */
+  --border-radius-lg: 0.75rem;   /* Convertito da 12px a rem */
+}
+
+/* Adattamento padding e margini */
+.dropdown-menu {
+  padding: 1.2rem;
+}
+
+.daltonismo-row,
+.cursor-row,
+.audio-row,
+.kbd-row,
+.lang-row {
+  gap: 0.5rem;  /* Convertito da 8px a rem */
+  margin: 0.8rem 0;
+}

@@ -1,0 +1,196 @@
+🔧 Performance & Rete
+1. Verifica risorse bloccanti (JS, CSS)
+Strumento: Network
+Passaggi:
+
+Apri DevTools (F12 o Ctrl+Shift+I).
+
+Vai alla tab Network.
+
+Ricarica la pagina con DevTools aperto.
+
+Filtra per JS o CSS.
+
+Ordina per "Blocking time" o "Waterfall": risorse all’inizio e con "Start Time" precoce sono bloccanti.
+
+2. Controlla dimensione, tempo di caricamento e cache headers
+Strumento: Network
+Passaggi:
+
+Sempre in tab Network, ricarica la pagina.
+
+Controlla colonne Size, Time e Cache-Control nelle intestazioni.
+
+Clicca una risorsa → tab Headers → guarda Cache-Control, Expires, ecc.
+
+3. Identifica risorse non servite da CDN o con cache inefficiente
+Strumento: Network
+Passaggi:
+
+Nel tab Network, ricarica.
+
+Verifica la colonna "Domain" per vedere se le risorse provengono da un CDN (es: cdn.example.com).
+
+Apri risorse sospette → tab Headers → verifica Cache-Control.
+
+4. Registra e analizza il caricamento della pagina
+Strumento: Performance
+Passaggi:
+
+Vai alla tab Performance.
+
+Premi il cerchio rosso per iniziare a registrare.
+
+Ricarica la pagina (con registrazione attiva).
+
+Ferma la registrazione e analizza la timeline: cerca First Paint, Largest Contentful Paint, Idle Time.
+
+5. Identifica task lunghi sul main thread
+Strumento: Performance
+Passaggi:
+
+Nella registrazione della Performance, cerca thread Main.
+
+Identifica blocchi gialli > 50ms → sono task lunghi.
+
+Analizza lo stack per ottimizzare lo script responsabile.
+
+6. Verifica scripting JS pesante e frame drop
+Strumento: Performance
+Passaggi:
+
+Sempre nel pannello Performance.
+
+Guarda la sezione FPS (fotogrammi per secondo).
+
+Se ci sono cadute sotto i 60fps, controlla le cause nel thread Main.
+
+7. Controlla codice JS/CSS non utilizzato
+Strumento: Coverage
+Passaggi:
+
+Vai a Command Menu (Ctrl+Shift+P) → digita Coverage, clicca.
+
+Avvia registrazione e ricarica pagina.
+
+Verranno mostrati file con codice unused %.
+
+Riduci o rimuovi ciò che non è usato.
+
+8. Simula rete lenta (3G) e CPU ridotta
+Strumento: Network Throttling / Performance
+Passaggi:
+
+Tab Network → menu a tendina "No Throttling" → scegli Slow 3G.
+
+Tab Performance → clic su ⚙️ (Settings) → abilita "4x CPU slowdown".
+
+Ricarica la pagina e osserva.
+
+9. Verifica spostamenti di layout (CLS)
+Strumento: Performance
+Passaggi:
+
+Registra in Performance.
+
+Cerca eventi di tipo Layout Shift.
+
+Analizza l’effetto nel paint snapshot.
+
+10. Controlla caricamento lazy delle immagini/script
+Strumenti: Network / Performance
+Passaggi:
+
+Tab Elements → seleziona immagine → verifica attributo loading="lazy".
+
+Oppure in tab Network, controlla quando le immagini sono caricate nella timeline: se troppo presto, manca il lazy loading.
+
+11. Analizza font esterni e blocchi di rendering
+Strumento: Fonts pane
+Passaggi:
+
+Tab Performance → cerca font-display: swap nei CSS.
+
+Oppure ispeziona elementi testo → controlla se font caricato da Google Fonts (es: fonts.googleapis.com).
+
+Assicurati che i font non blocchino il rendering.
+
+♿ Accessibilità & SEO
+12. Controlla ruoli, nomi accessibili e label degli elementi
+Strumento: Accessibility
+Passaggi:
+
+Tab Elements, clic su un elemento.
+
+Vai su Accessibility pane (attivalo se non visibile).
+
+Controlla Role, Name, Label.
+
+13. Verifica contrasto colori
+Strumento: Accessibility
+Passaggi:
+
+Ispeziona testo nel tab Elements.
+
+Il contrasto viene indicato nel pannello Styles, se troppo basso Chrome mostra un warning.
+
+14. Esamina struttura DOM, heading, alt immagini, attributi ARIA
+Strumento: Elements
+Passaggi:
+
+Esamina struttura in tab Elements.
+
+Controlla uso di <h1>–<h6>, alt su immagini, aria-* dove serve.
+
+15. Controlla errori JS o warning che impattano UX/SEO
+Strumento: Console
+Passaggi:
+
+Vai su tab Console.
+
+Cerca errori rossi o warning gialli.
+
+Clicca per espandere lo stack trace e correggere.
+
+🛠️ Debug & Best Practices
+16. Analizza e correggi JS/CSS pesanti o obsoleti
+Strumento: Sources
+Passaggi:
+
+Vai su tab Sources.
+
+Esplora file JS/CSS e cerca codice legacy o non usato.
+
+Usa anche Coverage per identificare codice inutilizzato.
+
+17. Verifica presenza e correttezza delle source maps
+Strumento: Sources
+Passaggi:
+
+Apri un file minificato.
+
+Se source map è presente, verrà mostrato il codice originale.
+
+In mancanza, vedrai solo codice offuscato.
+
+18. Identifica script/font di terze parti e loro impatto
+Strumento: Network
+Passaggi:
+
+Filtra per js, woff, ttf ecc.
+
+Controlla domain per capire se è di terze parti.
+
+Valuta tempo di caricamento e grandezza.
+
+19. Testa comportamento con user-agent diversi
+Strumento: Network Conditions
+Passaggi:
+
+Vai su tab Network → 3 puntini in alto a destra → Network Conditions.
+
+Deseleziona "Select automatically".
+
+Scegli un user-agent (es: Googlebot, Safari iPhone).
+
+Ricarica la pagina e osserva come risponde.

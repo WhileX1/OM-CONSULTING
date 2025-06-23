@@ -1,10 +1,10 @@
 /* Reset di base e font per l'intera applicazione */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Contenitore e stile della barra laterale */
+/* Stile base della sidebar */
 .sidebar {
   position: fixed;
   left: 0;
@@ -16,14 +16,133 @@ body {
   display: flex;
   flex-direction: column;
   padding-top: 64px;
-  z-index: 10; /* Priorità massima per la sidebar */
+  z-index: 10;
+  overflow: visible;
+  transition: 
+    width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    margin-left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Stessa durata e timing function */
+}
+
+/* Aggiungi un contenitore interno per gestire lo scroll se necessario */
+.sidebar-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: calc(100% - 64px);
+  width: 180px;
+}
+
+/* Modifica per permettere ai bottoni di sforare quando la sidebar è ristretta */
+.sidebar.narrow {
+  width: 41px !important;
+  overflow: visible;
+  transition: 
+    width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    margin-left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Stessa durata e timing function */
+}
+
+/* Regola la posizione degli elementi quando la sidebar è ristretta */
+.sidebar.narrow ~ .content {
+  margin-left: 48px; /* 36px + 12px (effetto libro) */
+}
+
+.sidebar.narrow ~ #book-effect {
+  left: 36px;
+}
+
+.sidebar.narrow ~ #book-effect-right {
+  left: 48px;
+}
+
+/* Miglioro i pulsanti toggle per la sidebar */
+#sidebar-toggle-narrow {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  background: #222;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  cursor: pointer;
+  z-index: 100;
+  padding: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pulsante toggle con bordo rosso - stato normale */
+#sidebar-toggle {
+  position: fixed;
+  top: 15px;
+  left: 4px;
+  background: #333;
+  border: 1px solid #e74c3c; /* Bordo rosso */
+  color: #e0e0e0;
+  cursor: pointer;
+  z-index: 1000;
+  padding: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  transition: 
+    left 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    transform 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Adatta la posizione del toggle quando la sidebar è ristretta */
+.sidebar.narrow ~ #sidebar-toggle {
+  left: 4px;
+}
+
+/* Effetto hover con animazione */
+#sidebar-toggle:hover,
+#sidebar-toggle:focus {
+  background: #444;
+  border-color: #ff6b6b;
+  animation: togglePulse 2s infinite;
+  outline: none; /* Rimuove l'outline predefinito del focus */
+}
+
+/* Animazione di pulsazione per il pulsante toggle in hover/focus */
+@keyframes togglePulse {
+  0% {
+    transform: scale(1);
+    border-color: #ff6b6b;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  50% {
+    transform: scale(1.1);
+    border-color: #ff8f8f;
+    box-shadow: 0 0 12px rgba(231, 76, 60, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    border-color: #ff6b6b;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+}
+
+/* Effetto al click */
+#sidebar-toggle:active {
+  transform: scale(0.95);
+  animation: none; /* Ferma l'animazione durante il click */
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.6);
 }
 
 /* Posizionamento e dimensioni dell'iframe della barra di ricerca */
 .iframe-ricerca {
   position: absolute;
   top: 10px;
-  left: 192px; /* 180px (sidebar) + 12px (effetto libro) */
+  left: 192px;
   width: 60%;
   max-width: 600px;
   height: 40px;
@@ -33,15 +152,17 @@ body {
   padding: 0;
   margin: 0 auto;
   right: 0;
+  transition: left 0.3s ease;
 }
 
 /* Contenitore principale del contenuto che si adatta alla sidebar */
 .content {
-  margin-left: 192px; /* 180px (sidebar) + 12px (effetto libro) */
+  margin-left: 192px;
   padding-top: 64px;
   height: 90vh;
   position: relative;
   z-index: 1;
+  transition: margin-left 0.3s ease;
 }
 
 /* Messaggio di istruzioni quando nessuna pagina è selezionata */
@@ -63,23 +184,24 @@ body {
   border: none;
 }
 
-/* Elemento dedicato per l'effetto libro - posizione corretta */
+/* Elemento dedicato per l'effetto libro - con transizione sincronizzata */
 #book-effect {
   position: fixed;
   top: 0;
-  left: 180px; /* Esattamente dopo la sidebar */
+  left: 180px;
   width: 12px;
   height: 100%;
-  z-index: 2; /* Sotto la sidebar ma sopra il contenuto */
+  z-index: 2;
   pointer-events: none;
   display: flex;
-  flex-direction: row; /* Esplicito per IE/Edge */
+  flex-direction: row;
+  transition: left 0.3s ease;
 }
 
 /* Dorso del libro (rosso) - lato sinistro */
 #book-effect::before {
   content: "";
-  flex: 0 0 2px; /* width fisso */
+  flex: 0 0 2px;
   height: 100%;
   background: #c62828;
   box-shadow: 0 0 3px rgba(0,0,0,0.3);
@@ -88,7 +210,7 @@ body {
 /* Pagine centrali con effetto ombra */
 #book-effect::after {
   content: "";
-  flex: 0 0 10px; /* width fisso - aumentato a 10px per riempire lo spazio fino al bordo destro */
+  flex: 0 0 10px;
   height: 100%;
   background: #f8f4e0;
   background-image: 
@@ -101,18 +223,19 @@ body {
       transparent 1px,
       transparent 2px
     );
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.15); /* Ombra interna per effetto pagine */
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.15);
 }
 
 /* Bordo destro della copertina (elemento separato) */
 #book-effect-right {
   position: fixed;
   top: 0;
-  left: 192px; /* 180px (sidebar) + 12px (effetto libro) */
-  width: 2px; /* Larghezza del bordo destro */
+  left: 192px;
+  width: 2px;
   height: 100%;
-  background: #a52222; /* Rosso leggermente diverso per il dorso esterno */
+  background: #a52222;
   box-shadow: 2px 0 4px rgba(0,0,0,0.3);
   z-index: 2;
   pointer-events: none;
+  transition: left 0.3s ease;
 }

@@ -27,6 +27,7 @@
             id="includi-contenuto"
             name="includi-contenuto"
             v-model="includiContenuto"
+            @change="toggleIncludiContenuto"
             class="visually-hidden"
             aria-describedby="includi-contenuto-desc"
           >
@@ -62,11 +63,21 @@
           @keypress.enter="onSearchEnter"
           aria-label="Campo di ricerca"
         >
+        <!-- Indicatore di caricamento -->
+        <div class="search-spinner" v-if="inviandoRicerca">
+          <div class="spinner"></div>
+        </div>
       </div>
     </header>
   </div>
   
   <!-- Script JavaScript per la logica dell'applicazione -->
   <script src="ricerca.js"></script>
+  
+  <!-- Debug script -->
+  <script>
+    console.log("Ricerca HTML caricato");
+    console.log("Vue disponibile:", typeof Vue !== 'undefined');
+  </script>
 </body>
 </html>

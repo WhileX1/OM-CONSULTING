@@ -35,10 +35,10 @@ def download():
     """Esegue il download (git pull)"""
     return run_command('git pull origin main')
 
-def upload(commit_message):
+def upload(commit_message=None):
     """Esegue l'upload (add, commit, push)"""
     # 1. Naviga alla directory
-    os.chdir(r'C:\Users\JAC\Desktop\OM-CONSULTING')
+    os.chdir(r'C:\Users\Sviatoslav\Desktop\OM-CONSULTING')
     
     # 2. git add .
     if run_command('git add .') != 0:
