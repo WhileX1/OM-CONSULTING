@@ -20,5 +20,3 @@ Per l'uplouad sul sito fai UNO ad UNO i comandi:
 3) git commit -m "descrizione"
 
 4) git push origin main
-
-test
