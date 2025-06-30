@@ -1,0 +1,349 @@
+/* ---- customize styles here ---- */
+
+.parallax-slider{
+	height: 650px;
+	
+	#mainCaptionHolder{
+		.container {
+			top:45%;
+		}
+		.slider_caption {
+			text-align:center;
+			
+			h1,h2 {
+				font-size:60px;
+				line-height:60px;
+				font-weight:bold;
+			}
+		}
+	}
+	
+	.controlBtn {
+		width: 60px;
+		height: 60px;
+		margin-top: -30px;
+		
+		.innerBtn{				
+			font-size: 48px;
+			line-height: 60px;
+			color: @linkColorHover;
+			background: @linkColor;
+		}
+		.slidesCounter{
+			font-size: 16px;
+			line-height: 60px;
+			color: @linkColor;
+			background: @linkColorHover;
+		}
+	}
+	.controlBtn:hover {
+		.innerBtn{
+			color: @linkColor;
+			background: @linkColorHover;
+		}
+	}
+	
+	.parallaxPrevBtn, .parallaxNextBtn {
+		.transition(all 0.5s ease);
+	}
+	.parallaxPrevBtn {
+		left: -60px;
+	}
+	.parallaxNextBtn {
+		right: -60px;
+	}
+	&:hover {
+		.parallaxPrevBtn{
+			left:0;
+		}
+		.parallaxNextBtn{
+			right:0;
+		}
+	}
+	
+	#paralaxSliderPagination{
+		bottom: 15px;
+		
+		&.buttons_pagination{
+			ul{
+				li{
+					border-radius: 50%;
+					margin: 3px;
+					width: 10px;
+					height: 10px;
+					border: 2px solid @linkColor;
+					
+					&:hover, &.active{
+						background: @linkColor;
+					}
+				}
+			}
+		}
+		&.images_pagination{
+			ul{
+				li{
+					margin: 3px;
+					opacity:.5;
+					
+					&:hover, &.active{
+						opacity:1;
+					}
+				}
+			}
+		}
+	}
+	
+	#previewSpinner{	
+		width: 50px;
+		height: 50px;
+		margin-left: -25px;
+		margin-top: -25px;
+		border-radius: 25px;
+		background: url(parallax-slider/img/spinner.GIF) 50% 50% #fff no-repeat;
+	}
+}
+
+
+
+/* ---- necessary slider settings  ---- */
+/* ---- without the need doesn't change anything  ---- */
+
+.parallax-slider{
+	overflow: hidden;
+	position:relative;
+	-ms-transform: translateZ(0);
+	transform: translateZ(0);
+
+	.baseList{
+		display: none;
+	}
+	
+	
+	#mainImageHolder{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		z-index: 1;
+		
+		.primaryHolder, .secondaryHolder{
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			
+			.imgBlock {
+				max-width: inherit;
+				background-repeat: no-repeat;
+				background-position: center;
+				background-size: cover;
+			}
+		}
+		.primaryHolder{
+			z-index:2;
+		}
+		.secondaryHolder{
+			z-index: 1;
+		}		
+	}
+	
+	
+	#mainCaptionHolder{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		z-index: 2;
+		
+		.container {
+			position:relative;
+		}
+		
+		.primaryCaption, .secondaryCaption {
+			position: absolute;
+			width: 100%;
+			top:0;
+			left:0;
+		}
+	}
+	
+	
+	.controlBtn{
+		position: absolute;
+		cursor: pointer;
+		display: block;
+		top: 50%;
+		z-index: 2;
+		
+		.innerBtn{
+			.transition(all 0.3s ease);
+			position: relative;
+			display:block;
+			width: 100%;
+			height: 100%;
+			text-align: center;
+			z-index: 1;
+		}
+		.slidesCounter{
+			.transition(all 0.3s ease);
+			position: absolute;
+			top: 0;
+			width: 60%;
+			height: 100%;
+		}
+		
+		&.parallaxPrevBtn{
+			.slidesCounter{
+				left: 0%;
+				text-align:left;
+			}
+			&:hover{
+				.slidesCounter{
+					left: 100%;
+				}
+			}
+		}
+		&.parallaxNextBtn{
+			.slidesCounter{
+				right: 0%;
+				text-align:right;
+			}
+			&:hover{
+				.slidesCounter{
+					right: 100%;
+				}
+			}
+		}
+	}
+	
+	
+	#paralaxSliderPagination{		
+		position: absolute;
+		width: 100%;
+		text-align: center;
+		z-index: 2;
+		
+		ul{
+			list-style: none;
+			margin: 0;
+			
+			li{
+				.transition(all 0.5s ease);
+				cursor: pointer;
+				display: inline-block;
+			}
+		}
+	}
+	
+	
+	#previewSpinner{	
+		position: absolute;
+		display: block;
+		top: 50%;
+		left: 50%;
+		z-index: 99;
+	}
+	
+	
+	&.zoom-fade-eff{
+		#mainImageHolder{
+			.primaryHolder{
+				.opacity(100);
+				.scale(1);
+					&.animateState{
+						.opacity(0);
+						.scale(3);
+					}
+			}
+			.secondaryHolder{
+				.opacity(100);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+		}
+		#mainCaptionHolder{
+			.primaryCaption{
+				.opacity(100);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+			.secondaryCaption{
+				.opacity(100);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+		}
+	}
+	&.simple-fade-eff{
+		#mainImageHolder{
+			.primaryHolder{
+				.opacity(100);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+			.secondaryHolder{
+				&.animateState{
+					.opacity(100);
+						&.animateState{
+							.opacity(0);
+						}
+				}
+			}
+		}
+		#mainCaptionHolder{
+			.primaryCaption{
+				.opacity(100);
+				.scale(1);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+			.secondaryCaption{
+				.opacity(100);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+		}
+	}
+	&.slide-top-eff{
+		#mainImageHolder{
+			.primaryHolder{
+				top: 0;
+					&.animateState{
+						top: -100%;
+					}
+			}
+			.secondaryHolder{
+				&.animateState{
+					top: 0;
+						&.animateState{
+							top: 100%;
+						}
+				}
+			}
+		}
+		#mainCaptionHolder{
+			.primaryCaption{
+				.opacity(100);
+				.scale(1);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+			.secondaryCaption{
+				.opacity(100);
+					&.animateState{
+						.opacity(0);
+					}
+			}
+		}
+	}
+}

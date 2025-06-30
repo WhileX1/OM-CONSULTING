@@ -1,0 +1,8 @@
+[26-Oct-2024 01:19:16 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home/divino/public_html/wp-content/themes/twentytwentyone/index.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/divino/public_html/wp-content/themes/twentytwentyone/index.php on line 17
+[27-Jun-2025 13:48:37 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home/divino/public_html/wp-content/themes/twentytwentyone/index.php:17
+Stack trace:
+#0 {main}
+  thrown in /home/divino/public_html/wp-content/themes/twentytwentyone/index.php on line 17

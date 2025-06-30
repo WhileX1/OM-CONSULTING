@@ -52,7 +52,16 @@ def upload(commit_message=None):
         return False
     
     # 4. git push
-    return run_command('git push origin main') == 0
+    push_result = run_command('git push origin main')
+    if push_result == 0:
+        return True
+    else:
+        risposta = input("Push fallito. Vuoi forzare il push? (y/N): ").strip().lower()
+        if risposta == 'y':
+            return run_command('git push --force origin main') == 0
+        else:
+            print("Push non forzato. Operazione annullata.")
+            return False
 
 if __name__ == "__main__":
     print("=== Script di automazione Git ===")

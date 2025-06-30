@@ -1,0 +1,5 @@
+[18-Jun-2025 00:51:25 UTC] PHP Notice:  Undefined index: wp_version in /home/divino/public_html/wp-content/themes/twentynineteen/functions.php on line 15
+[18-Jun-2025 00:51:25 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function get_template_directory() in /home/divino/public_html/wp-content/themes/twentynineteen/functions.php:16
+Stack trace:
+#0 {main}
+  thrown in /home/divino/public_html/wp-content/themes/twentynineteen/functions.php on line 16
