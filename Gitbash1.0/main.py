@@ -151,27 +151,24 @@ class GitGuiApp(tk.Tk):
         button_frame = tk.Frame(self.main_container)
         button_frame.pack(side="bottom", fill="x")
         btn_opts = dict(width=20, height=2, font=("Segoe UI", 10, "bold"))
-        # 4 pulsanti su 4 righe
         row1 = tk.Frame(button_frame)
         row1.pack(fill="x", pady=0)
         self.btn_pull = tk.Button(row1, text="Pull", command=self.do_pull, **btn_opts)
         self.btn_pull.pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
-
+        self.btn_push = tk.Button(row1, text="Push", command=self.do_push, **btn_opts)
+        self.btn_push.pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
         row2 = tk.Frame(button_frame)
         row2.pack(fill="x", pady=0)
-        self.btn_push = tk.Button(row2, text="Push", command=self.do_push, **btn_opts)
-        self.btn_push.pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
-
-        row3 = tk.Frame(button_frame)
-        row3.pack(fill="x", pady=0)
-        self.btn_branch = tk.Button(row3, text="Cambia branch", command=self.do_branch, **btn_opts)
+        self.btn_branch = tk.Button(row2, text="Cambia branch", command=self.do_branch, **btn_opts)
         self.btn_branch.pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
-
-        row4 = tk.Frame(button_frame)
-        row4.pack(fill="x", pady=0)
-        self.btn_dir = tk.Button(row4, text="Cambia directory", command=self.change_directory, **btn_opts)
+        self.btn_dir = tk.Button(row2, text="Cambia directory", command=self.change_directory, **btn_opts)
         self.btn_dir.pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
-
+        # Riempi le righe successive con pulsanti disabilitati per mantenere lo stile
+        for _ in range(2):
+            row = tk.Frame(button_frame)
+            row.pack(fill="x", pady=0)
+            tk.Button(row, state="disabled", **btn_opts).pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
+            tk.Button(row, state="disabled", **btn_opts).pack(side="left", expand=True, fill="x", pady=6, padx=BUTTON_PAD_INNER)
         self.button_frame = button_frame
 
     def update_dir_label(self, force_refresh=False):

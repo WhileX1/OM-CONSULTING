@@ -4,10 +4,16 @@ class GitRepo:
     @staticmethod
     def is_valid_repo():
         try:
+            startupinfo = None
+            if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
             subprocess.check_output(
                 ['git', 'rev-parse', '--is-inside-work-tree'],
                 stderr=subprocess.STDOUT,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+                startupinfo=startupinfo
             )
             return True
         except Exception:
@@ -16,10 +22,16 @@ class GitRepo:
     @staticmethod
     def has_commits():
         try:
+            startupinfo = None
+            if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
             subprocess.check_output(
                 ['git', 'rev-parse', 'HEAD'],
                 stderr=subprocess.STDOUT,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+                startupinfo=startupinfo
             )
             return True
         except subprocess.CalledProcessError:
@@ -32,10 +44,16 @@ class GitRepo:
         if not GitRepo.has_commits():
             return "(nessun commit)"
         try:
+            startupinfo = None
+            if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
             return subprocess.check_output(
                 ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
                 text=True,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+                startupinfo=startupinfo
             ).strip()
         except Exception:
             return "(nessun branch)"
@@ -45,10 +63,16 @@ class GitRepo:
         if not GitRepo.has_commits():
             return "(nessuna origine)"
         try:
+            startupinfo = None
+            if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
             return subprocess.check_output(
                 ['git', 'remote', 'get-url', 'origin'],
                 text=True,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+                startupinfo=startupinfo
             ).strip()
         except Exception:
             return "(nessuna origine)"
@@ -56,9 +80,15 @@ class GitRepo:
     @staticmethod
     def fetch():
         try:
+            startupinfo = None
+            if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
             subprocess.check_call(
                 ['git', 'fetch'],
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+                startupinfo=startupinfo
             )
             return True, None
         except subprocess.CalledProcessError as e:
