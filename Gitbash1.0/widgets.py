@@ -5,6 +5,21 @@ from helpers import (MouseWheelHelper, set_placeholder, clear_placeholder,
                      count_selected_files, update_counter_var)
 
 class FileSelectionWindow:
+    def _on_paste(self, event, var, entry):
+        # Intercetta il testo incollato e verifica se è un percorso valido
+        try:
+            pasted = self.win.clipboard_get()
+        except Exception:
+            return "break"
+        # Considera valido solo se esiste come file o cartella, oppure se rispetta uno stile di path
+        import re
+        is_path = os.path.exists(pasted) or re.match(r'^[a-zA-Z]:\\|^/|^\\\\', pasted)
+        if not is_path:
+            from helpers import show_warning
+            show_warning("Attenzione", "Il testo incollato non sembra un percorso valido e verrà ignorato.")
+            return "break"
+        # Se valido, lascia che l'evento prosegua normalmente
+        return None
     def __init__(self, parent, files, num_var, on_files_saved, app_ref=None):
         self.parent = parent
         self.files = files
@@ -98,6 +113,10 @@ class FileSelectionWindow:
         def scroll_to_end(*_):
             entry.after(1, lambda: entry.xview_moveto(1.0))
         var.trace_add('write', scroll_to_end)
+        # Gestione incolla: intercetta ctrl+v e paste
+        entry.bind("<Control-v>", lambda e, v=var, ent=entry: self._on_paste(e, v, ent))
+        entry.bind("<Control-V>", lambda e, v=var, ent=entry: self._on_paste(e, v, ent))
+        entry.bind("<<Paste>>", lambda e, v=var, ent=entry: self._on_paste(e, v, ent))
         self._row_widgets.append((row_frame, btn, entry))
         return row_frame, btn, entry
 

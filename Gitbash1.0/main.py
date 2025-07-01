@@ -118,9 +118,15 @@ class GitGuiApp(tk.Tk):
         self.update_dir_label()
         self.check_repo()
 
-    def _update_branch_info(self):
+    def _update_branch_info(self, prune=False):
         # Recupera branch locali e remoti e costruisce la mappa branch -> tipo
         try:
+            if prune:
+                try:
+                    kwargs = get_subprocess_kwargs()
+                    subprocess.check_output(['git', 'fetch', '--prune'], text=True, **kwargs)
+                except Exception:
+                    pass
             local = set(GitRepo.get_local_branches())
             remote = set(GitRepo.get_remote_branches())
             all_branches = local | remote
@@ -198,7 +204,7 @@ class GitGuiApp(tk.Tk):
             self.btn_branch.config(state="normal")
 
     def do_pull(self):
-        self._update_branch_info()
+        self._update_branch_info(prune=True)
         self._show_branch_section(
             title="Seleziona o filtra il branch da cui fare Pull:",
             action_btn_text="Esegui Pull",
@@ -510,7 +516,7 @@ class GitGuiApp(tk.Tk):
             ok, msg = GitRepo.delete_local_branch(branch)
             if ok:
                 self.invalidate_cache()
-                self._update_branch_info()
+                self._update_branch_info(prune=True)
                 self.update_dir_label(force_refresh=True)
                 show_info("Branch eliminato", msg)
                 entry_var.set("")
