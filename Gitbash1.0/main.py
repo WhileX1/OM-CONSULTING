@@ -1,6 +1,6 @@
 import subprocess
 import tkinter as tk
-from tkinter import messagebox, filedialog, simpledialog
+from tkinter import filedialog
 from gitrepo import GitRepo
 from widgets import FileSelectionWindow
 from config import *
@@ -257,7 +257,6 @@ class GitGuiApp(tk.Tk):
         remote_entry.grid(row=0, column=1)
         files = self._push_files
         num_var = self._push_num_var
-        
         def get_selected_count():
             return count_selected_files(files)
         file_counter_var = tk.StringVar()
@@ -265,7 +264,6 @@ class GitGuiApp(tk.Tk):
             update_counter_var(file_counter_var, get_selected_count, num_var)
         update_file_counter()
         num_var.trace_add("write", update_file_counter)
-
         def after_files_saved():
             update_file_counter()
         btn_select_file = tk.Button(
@@ -280,7 +278,6 @@ class GitGuiApp(tk.Tk):
             update_file_counter()
             self.after(200, periodic_update)
         periodic_update()
-
         tk.Label(self.main_container, text="Messaggio di commit:", font=("Segoe UI", 10, "bold")).pack(pady=5)
         commit_text = tk.Text(self.main_container, height=5, width=60, font=("Segoe UI", 10, "bold"))
         commit_text.pack(pady=5)
@@ -289,7 +286,6 @@ class GitGuiApp(tk.Tk):
             commit_text.insert("1.0", self._push_commit_msg)
         bottom_frame = tk.Frame(self.main_container)
         bottom_frame.pack(side="bottom", fill="x", pady=10)
-
         def do_push_action():
             selected_files = self.get_valid_files(files)
             if selected_files is None:
@@ -306,9 +302,15 @@ class GitGuiApp(tk.Tk):
             unchanged_files = []
             changed_files = []
             try:
-                status_lines = subprocess.check_output(['git', 'status', '--porcelain'], text=True).splitlines()
+                from helpers import get_subprocess_kwargs
+                kwargs = get_subprocess_kwargs()
+                status_lines = subprocess.check_output(
+                    ['git', 'status', '--porcelain'], text=True, **kwargs
+                ).splitlines()
                 abs_selected = [os.path.abspath(f) for f in selected_files]
-                repo_root = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip()
+                repo_root = subprocess.check_output(
+                    ['git', 'rev-parse', '--show-toplevel'], text=True, **kwargs
+                ).strip()
                 rel_selected = [os.path.relpath(f, repo_root).replace('\\', '/') for f in abs_selected]
                 for idx, f in enumerate(selected_files):
                     found = False
@@ -337,7 +339,6 @@ class GitGuiApp(tk.Tk):
             else:
                 show_error("Errore Push", push_msg)
             self.update_dir_label(force_refresh=True)
-
         def on_back():
             self._push_commit_msg = commit_text.get("1.0", "end").strip()
             self.show_menu()
