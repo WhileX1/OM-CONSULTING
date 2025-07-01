@@ -1,3 +1,4 @@
+import sys
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -116,3 +117,18 @@ def show_warning(title, message):
 
 def show_info(title, message):
     mb.showinfo(title, message)
+
+    # Helper universale per subprocess: nasconde sempre la console su Windows
+def get_subprocess_kwargs():
+    """Restituisce i parametri startupinfo e creationflags per nascondere la console su Windows."""
+    import subprocess
+    kwargs = {}
+    if sys.platform.startswith("win"):
+        if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+            kwargs['startupinfo'] = startupinfo
+        if hasattr(subprocess, 'CREATE_NO_WINDOW'):
+            kwargs['creationflags'] = subprocess.CREATE_NO_WINDOW
+    return kwargs
