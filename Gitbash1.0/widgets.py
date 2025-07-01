@@ -94,6 +94,10 @@ class FileSelectionWindow:
         entry.bind("<FocusIn>", lambda e, var=var, ent=entry: clear_placeholder(var, ent, self.placeholder, self.normal_fg))
         entry.bind("<FocusOut>", lambda e, var=var, ent=entry: set_placeholder(var, ent, self.placeholder, self.placeholder_fg))
         var.trace_add('write', lambda *a: self.update_selected_count())
+        # Always scroll to end when value changes
+        def scroll_to_end(*_):
+            entry.after(1, lambda: entry.xview_moveto(1.0))
+        var.trace_add('write', scroll_to_end)
         self._row_widgets.append((row_frame, btn, entry))
         return row_frame, btn, entry
 
@@ -126,9 +130,13 @@ class FileSelectionWindow:
             # Aggiorna anche la variabile associata all'entry
             if idx + i < len(self.file_entries):
                 self.file_entries[idx + i].set(path)
+                # Scroll to end after setting value
+                entry_widget = self._row_widgets[idx + i][2]
+                entry_widget.after(1, lambda ent=entry_widget: ent.xview_moveto(1.0))
         # Aggiorna il colore dell'entry corrente
         if file_paths:
             ent.config(fg=self.normal_fg)
+            ent.after(1, lambda: ent.xview_moveto(1.0))
 
     def get_selected_count(self):
         # Usa la funzione helper centralizzata
@@ -151,6 +159,27 @@ class FileSelectionWindow:
             self._app_ref._file_selection_window = None
 
     def on_save(self):
+        # Check for empty fields before saving
+        empty_found = False
+        for idx, var in enumerate(self.file_entries):
+            val = var.get().strip()
+            if not val or val == self.placeholder:
+                empty_found = True
+                break
+        if empty_found:
+            # Show warning that auto-closes after 1 second
+            import threading
+            from helpers import show_warning
+            def close_warning():
+                # Find and destroy the warning window after 1s
+                for w in self.win.winfo_children():
+                    if isinstance(w, tk.Toplevel) and 'warning' in str(w).lower():
+                        w.destroy()
+            def show_and_close():
+                show_warning("Attenzione", "Tutti i campi devono essere compilati.")
+                self.win.after(1000, lambda: [w.destroy() for w in self.win.winfo_children() if isinstance(w, tk.Toplevel) and 'warning' in str(w).lower()])
+            self.win.after(10, show_and_close)
+            return
         for idx, var in enumerate(self.file_entries):
             val = var.get().strip()
             if val and val != self.placeholder:
@@ -201,6 +230,10 @@ class FileSelectionWindow:
                 self.file_entries[i].set(self.files[i])
             elif not self.file_entries[i].get():
                 self.file_entries[i].set("")
+            # Always scroll to end after setting value
+            if hasattr(self, '_row_widgets') and i < len(self._row_widgets):
+                entry_widget = self._row_widgets[i][2]
+                entry_widget.after(1, lambda ent=entry_widget: ent.xview_moveto(1.0))
         if len(self.files) < num:
             self.files.extend([None]*(num-len(self.files)))
         elif len(self.files) > num:

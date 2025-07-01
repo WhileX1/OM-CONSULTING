@@ -1,13 +1,14 @@
-import subprocess
 import tkinter as tk
-from tkinter import filedialog
-from gitrepo import GitRepo
+from tkinter import filedialog, messagebox as mb
+from gitrepo import GitRepo, subprocess
 from widgets import FileSelectionWindow
 from config import *
 import time
 import os, sys, atexit
+import ctypes
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
-                     count_selected_files, update_counter_var)
+                     count_selected_files, update_counter_var, get_subprocess_kwargs,
+                     show_info, show_error, show_info, show_warning)
 
 class GitGuiApp(tk.Tk):
     def reset_content_area(self):
@@ -34,7 +35,6 @@ class GitGuiApp(tk.Tk):
 
     def validate_branch(self, branch):
         # Controlla se il branch è valido e mostra warning se non lo è.
-        from helpers import show_warning
         if branch not in self.branch_info:
             show_warning("Branch non valido", "Branch non trovato.")
             return False
@@ -43,7 +43,6 @@ class GitGuiApp(tk.Tk):
 
     def get_valid_files(self, files):
         # Restituisce solo i file validi, mostra errore se nessuno.
-        from helpers import show_error
         valid = [f for f in files if f and f.strip()]
         if not valid:
             show_error("Errore", "Nessun file selezionato.")
@@ -53,7 +52,6 @@ class GitGuiApp(tk.Tk):
 
     def validate_commit_message(self, msg):
         # Controlla se il messaggio di commit è valido, mostra errore se vuoto.
-        from helpers import show_error
         if not msg:
             show_error("Errore", "Il messaggio di commit è vuoto. Inserisci un messaggio di commit.")
             return False
@@ -116,6 +114,7 @@ class GitGuiApp(tk.Tk):
     @branch_info.setter
     def branch_info(self, value):
         self._branch_info = value
+
     def _clear_content_frame_widgets(self):
         # Usa la funzione centralizzata
         self.reset_content_area()
@@ -198,7 +197,6 @@ class GitGuiApp(tk.Tk):
             self._cached_is_repo = GitRepo.is_valid_repo()
             self._cache_time = now
         if not self._cached_is_repo:
-            from helpers import show_warning
             self.btn_pull.config(state="disabled")
             self.btn_push.config(state="disabled")
             self.btn_branch.config(state="disabled")
@@ -220,7 +218,8 @@ class GitGuiApp(tk.Tk):
                 action_callback=action_callback,
                 action_text="Esegui Pull",
                 show_force=True
-            )
+            ),
+            show_delete_branch=False
         )
     def _do_pull_action(self, branch, force_var=None):
         if not self.validate_branch(branch):
@@ -233,13 +232,11 @@ class GitGuiApp(tk.Tk):
         if ok:
             self.invalidate_cache()
             self.update_dir_label(force_refresh=True)
-            from helpers import show_info
             if msg and "already up to date" in msg.lower():
                 show_info("Pull Output", "Branch locale allineato con il branch remoto.")
             else:
                 show_info("Pull Output", msg)
         else:
-            from helpers import show_error
             show_error("Errore Pull", msg)
 
     def do_push(self):
@@ -257,13 +254,16 @@ class GitGuiApp(tk.Tk):
         remote_entry.grid(row=0, column=1)
         files = self._push_files
         num_var = self._push_num_var
+
         def get_selected_count():
             return count_selected_files(files)
         file_counter_var = tk.StringVar()
+
         def update_file_counter(*args):
             update_counter_var(file_counter_var, get_selected_count, num_var)
         update_file_counter()
         num_var.trace_add("write", update_file_counter)
+
         def after_files_saved():
             update_file_counter()
         btn_select_file = tk.Button(
@@ -274,6 +274,7 @@ class GitGuiApp(tk.Tk):
         )
         btn_select_file.grid(row=0, column=2, padx=(16,0))
         tk.Label(branch_row, textvariable=file_counter_var, font=("Segoe UI", 10, "bold"), width=6, anchor="center").grid(row=0, column=3, padx=(6,0))
+        
         def periodic_update():
             update_file_counter()
             self.after(200, periodic_update)
@@ -286,13 +287,13 @@ class GitGuiApp(tk.Tk):
             commit_text.insert("1.0", self._push_commit_msg)
         bottom_frame = tk.Frame(self.main_container)
         bottom_frame.pack(side="bottom", fill="x", pady=10)
+        
         def do_push_action():
             selected_files = self.get_valid_files(files)
             if selected_files is None:
                 return
             branch_name = remote_var.get().strip()
             if not branch_name:
-                from helpers import show_error
                 show_error("Errore", "Il campo 'Branch remoto' è vuoto. Specifica un branch remoto.")
                 return
             msg = commit_text.get("1.0", "end").strip()
@@ -301,18 +302,30 @@ class GitGuiApp(tk.Tk):
             self._push_commit_msg = msg
             unchanged_files = []
             changed_files = []
+            # Espandi cartelle in lista file
+            def expand_dirs(paths):
+                result = []
+                for p in paths:
+                    if os.path.isdir(p):
+                        for root, dirs, files in os.walk(p):
+                            for file in files:
+                                result.append(os.path.join(root, file))
+                    else:
+                        result.append(p)
+                return result
+
+            expanded_files = expand_dirs(selected_files)
             try:
-                from helpers import get_subprocess_kwargs
                 kwargs = get_subprocess_kwargs()
                 status_lines = subprocess.check_output(
                     ['git', 'status', '--porcelain'], text=True, **kwargs
                 ).splitlines()
-                abs_selected = [os.path.abspath(f) for f in selected_files]
+                abs_selected = [os.path.abspath(f) for f in expanded_files]
                 repo_root = subprocess.check_output(
                     ['git', 'rev-parse', '--show-toplevel'], text=True, **kwargs
                 ).strip()
                 rel_selected = [os.path.relpath(f, repo_root).replace('\\', '/') for f in abs_selected]
-                for idx, f in enumerate(selected_files):
+                for idx, f in enumerate(expanded_files):
                     found = False
                     for line in status_lines:
                         line_path = line[3:] if len(line) > 3 else line.strip()
@@ -325,20 +338,19 @@ class GitGuiApp(tk.Tk):
                     else:
                         unchanged_files.append(f)
             except Exception:
-                changed_files = selected_files
+                changed_files = expanded_files
                 unchanged_files = []
             if not changed_files:
-                from helpers import show_info
                 show_info("Nessuna modifica", "File {} senza modifiche".format(", ".join(os.path.basename(f) for f in unchanged_files)))
                 return
             ok, push_msg = GitRepo.push(changed_files, branch_name, msg)
-            from helpers import show_info, show_error
             if ok:
                 self.invalidate_cache()
                 show_info("Successo", f"Push eseguito con successo al branch {branch_name}")
             else:
                 show_error("Errore Push", push_msg)
             self.update_dir_label(force_refresh=True)
+        
         def on_back():
             self._push_commit_msg = commit_text.get("1.0", "end").strip()
             self.show_menu()
@@ -376,14 +388,43 @@ class GitGuiApp(tk.Tk):
                 action_callback=action_callback,
                 action_text="Cambia branch",
                 show_force=False
-            )
+            ),
+            show_delete_branch=True
         )
 
     def _do_checkout_action(self, branch, _force_var=None):
-        if not self.validate_branch(branch):
+        # Se il branch non esiste, mostra solo la domanda di creazione, senza doppio avviso
+        if branch not in self.branch_info:
+            res = mb.askyesno(
+                "Branch non trovato",
+                f"Il branch '{branch}' non esiste.\n\nVuoi creare un nuovo branch con questo nome?"
+            )
+            if res:
+                ok, msg = GitRepo.create_and_checkout(branch)
+                if ok:
+                    self.invalidate_cache()
+                    self._update_branch_info()  # Aggiorna la lista dei branch
+                    self.update_dir_label(force_refresh=True)
+                    self.check_repo(force_refresh=True)
+                    show_info("Nuovo branch", f"{msg}")
+                    # Aggiorna la UI della lista branch in tempo reale
+                    self._show_branch_section(
+                        title="Seleziona o filtra il branch:",
+                        action_btn_text="Cambia branch",
+                        action_callback=self._do_checkout_action,
+                        extra_widgets=lambda bottom_frame, entry_var, action_callback: self._common_extra_widgets(
+                            bottom_frame=bottom_frame,
+                            entry_var=entry_var,
+                            action_callback=action_callback,
+                            action_text="Cambia branch",
+                            show_force=False
+                        ),
+                        show_delete_branch=True
+                    )
+                else:
+                    show_error("Errore creazione branch", msg)
             return
         ok, msg = GitRepo.checkout(branch)
-        from helpers import show_info, show_error
         if ok:
             self.invalidate_cache()
             self.update_dir_label(force_refresh=True)
@@ -393,10 +434,9 @@ class GitGuiApp(tk.Tk):
             show_error("Errore cambio branch", msg)
 
     def _common_extra_widgets(self, bottom_frame, entry_var, action_callback, action_text, show_force=False):
-        # Crea i widget comuni per le azioni branch/pull, con opzione force.
+        # Crea solo widget extra (es. force checkbox), NON pulsanti di azione.
         # Ritorna la funzione di conferma da collegare all'evento <Return>.
         force_var = tk.BooleanVar(value=False) if show_force else None
-        tk.Button(bottom_frame, text="Indietro", command=self.show_menu, font=("Segoe UI", 10, "bold")).pack(side="left", padx=10)
         if show_force:
             force_chk = tk.Checkbutton(
                 bottom_frame, text="Force pull", variable=force_var,
@@ -409,10 +449,9 @@ class GitGuiApp(tk.Tk):
                 action_callback(branch, force_var)
             else:
                 action_callback(branch)
-        tk.Button(bottom_frame, text=action_text, command=on_confirm, font=("Segoe UI", 10, "bold")).pack(side="right", padx=10)
         return on_confirm
 
-    def _show_branch_section(self, title, action_btn_text, action_callback, extra_widgets):
+    def _show_branch_section(self, title, action_btn_text, action_callback, extra_widgets, show_delete_branch=False):
         # Centralized UI for branch selection (used by Pull and Branch)
         self.clear_content_frame()
         self.button_frame.pack_forget()
@@ -456,8 +495,81 @@ class GitGuiApp(tk.Tk):
         def on_update_mousewheel(*args):
             update_mousewheel()
         entry_var.trace_add("write", lambda *a: on_update_mousewheel())
+
         bottom_frame = tk.Frame(self.main_container)
         bottom_frame.pack(side="bottom", fill="x", pady=10)
+
+        # --- Pulsante Elimina branch ---
+        def on_delete_branch():
+            branch = entry_var.get().strip()
+            if not branch:
+                show_error("Errore", "Nessun branch selezionato.")
+                return
+            # Solo branch locale
+            local_branches = GitRepo.get_local_branches()
+            if branch not in local_branches:
+                show_error("Errore", f"Il branch '{branch}' non esiste tra i branch locali.")
+                return
+            if branch == GitRepo.get_current_branch():
+                show_error("Errore", "Non puoi eliminare il branch attualmente attivo.")
+                return
+            res = mb.askyesno("Conferma eliminazione", f"Vuoi eliminare il branch locale '{branch}'?\nQuesta azione non è reversibile.")
+            if not res:
+                return
+            ok, msg = GitRepo.delete_local_branch(branch)
+            if ok:
+                self.invalidate_cache()
+                self._update_branch_info()
+                self.update_dir_label(force_refresh=True)
+                show_info("Branch eliminato", msg)
+                entry_var.set("")
+                update_buttons()
+                # Aggiorna la sezione branch dopo eliminazione
+                self._show_branch_section(
+                    title="Seleziona o filtra il branch:",
+                    action_btn_text="Cambia branch",
+                    action_callback=self._do_checkout_action,
+                    extra_widgets=lambda bottom_frame, entry_var, action_callback: self._common_extra_widgets(
+                        bottom_frame=bottom_frame,
+                        entry_var=entry_var,
+                        action_callback=action_callback,
+                        action_text="Cambia branch",
+                        show_force=False
+                    ),
+                    show_delete_branch=True
+                )
+            else:
+                show_error("Errore eliminazione branch", msg)
+
+        # --- Pulsanti azione branch: Indietro | Cambia branch | (opzionale) Elimina branch ---
+        for widget in bottom_frame.winfo_children():
+            widget.destroy()
+
+        # Indietro
+        btn_back = tk.Button(bottom_frame, text="Indietro", command=self.show_menu, font=("Segoe UI", 10, "bold"))
+        btn_back.pack(side="left", padx=10)
+
+        # Cambia branch
+        def on_confirm():
+            branch = entry_var.get().strip()
+            action_callback(branch)
+        btn_change = tk.Button(bottom_frame, text=action_btn_text, command=on_confirm, font=("Segoe UI", 10, "bold"))
+        btn_change.pack(side="right", padx=10)
+
+        # Elimina branch SOLO se richiesto
+        if show_delete_branch:
+            btn_delete = tk.Button(bottom_frame, text="Elimina branch", command=on_delete_branch, font=("Segoe UI", 10, "bold"), fg="red")
+            btn_delete.pack(side="right", padx=10)
+
+        # Setup extra widgets (e.g., force checkbox for pull) SOLO se non sono già presenti
+        # (Evita duplicazione: extra_widgets non deve aggiungere altri pulsanti azione)
+        # Se extra_widgets aggiunge solo widget "extra" (es. force), va bene:
+        on_confirm_extra = extra_widgets(bottom_frame, entry_var, action_callback)
+        # Se extra_widgets restituisce una funzione di conferma, usala per <Return>
+        entry.bind("<Return>", lambda event: (on_confirm_extra() if on_confirm_extra else on_confirm()))
+        entry.focus()
+        if self.main_container.winfo_toplevel() is not self:
+            self.main_container.winfo_toplevel().resizable(False, False)
 
         # Centralized cleanup: destroy scrollable widgets and unbind mousewheel on section change
         def cleanup():
@@ -474,12 +586,6 @@ class GitGuiApp(tk.Tk):
             except Exception:
                 pass
         self._current_section_cleanup = cleanup
-        # Setup extra widgets (e.g., force checkbox for pull)
-        on_confirm = extra_widgets(bottom_frame, entry_var, action_callback)
-        entry.bind("<Return>", lambda event: on_confirm())
-        entry.focus()
-        if self.main_container.winfo_toplevel() is not self:
-            self.main_container.winfo_toplevel().resizable(False, False)
 
     def clear_content_frame(self):
         # Centralized cleanup for scrollable/mousewheel widgets
@@ -532,7 +638,6 @@ class GitGuiApp(tk.Tk):
     def change_directory(self):
         new_dir = filedialog.askdirectory(title="Seleziona nuova directory di lavoro")
         if new_dir:
-            from helpers import show_info, show_error
             try:
                 os.chdir(new_dir)
                 save_last_dir(new_dir)
@@ -545,11 +650,65 @@ class GitGuiApp(tk.Tk):
 
 if __name__ == "__main__":
     lockfile = os.path.join(os.getenv('TEMP') or '.', 'gitbash_auto.lock')
+
+
+    def is_pid_running(pid):
+        try:
+            if pid <= 0:
+                return False
+            if os.name == 'nt':
+                PROCESS_QUERY_INFORMATION = 0x0400
+                process = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
+                if process != 0:
+                    ctypes.windll.kernel32.CloseHandle(process)
+                    return True
+                else:
+                    return False
+            else:
+                os.kill(pid, 0)
+                return True
+        except Exception:
+            return False
+
+
+    def check_gui_visible(app):
+        # Controlla se la GUI Tkinter è visibile per questa istanza
+        # Dopo la creazione, la finestra principale potrebbe non essere ancora "mapped".
+        # Forziamo l'update e controlliamo se è visibile.
+        app.update_idletasks()
+        app.update()
+        return app.winfo_exists() and (app.state() != 'withdrawn')
+
+
+    # Kill any previous process of this app (if running)
     if os.path.exists(lockfile):
-        # Se il lockfile esiste, esci subito (anti-doppia istanza)
-        sys.exit(0)
+        try:
+            with open(lockfile, 'r') as f:
+                pid_str = f.read().strip()
+                pid = int(pid_str) if pid_str.isdigit() else None
+        except Exception:
+            pid = None
+        if pid and pid != os.getpid():
+            try:
+                if os.name == 'nt':
+                    import ctypes
+                    PROCESS_TERMINATE = 0x0001
+                    handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, 0, pid)
+                    if handle:
+                        ctypes.windll.kernel32.TerminateProcess(handle, -1)
+                        ctypes.windll.kernel32.CloseHandle(handle)
+                else:
+                    os.kill(pid, 9)
+            except Exception:
+                pass
+        try:
+            os.remove(lockfile)
+        except Exception:
+            pass
+
     with open(lockfile, 'w') as f:
         f.write(str(os.getpid()))
+
     def remove_lock():
         try:
             if os.path.exists(lockfile):
@@ -557,8 +716,37 @@ if __name__ == "__main__":
         except Exception:
             pass
     atexit.register(remove_lock)
+
     try:
+        # Controllo ambiente Tkinter
+        try:
+            import tkinter
+            root = tkinter.Tk()
+            root.withdraw()
+            root.update()
+            root.destroy()
+        except Exception as tkerr:
+            try:
+                mb.showerror("Errore ambiente Tkinter", f"Tkinter non funziona correttamente:\n{tkerr}")
+            except Exception:
+                pass
+            remove_lock()
+            sys.exit(1)
+
         app = GitGuiApp()
+        if not check_gui_visible(app):
+            try:
+                mb.showerror("Errore GUI", "La finestra principale non è visibile.\nControlla che non ci siano errori di Tkinter o di ambiente.")
+            except Exception:
+                pass
+            remove_lock()
+            sys.exit(1)
         app.mainloop()
+    except Exception as e:
+        try:
+            mb.showerror("Errore avvio app", f"Errore durante l'avvio dell'app:\n{e}")
+        except Exception:
+            pass
+        raise
     finally:
         remove_lock()

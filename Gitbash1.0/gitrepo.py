@@ -2,6 +2,44 @@ import subprocess
 
 class GitRepo:
     @staticmethod
+    def delete_local_branch(branch):
+        # Elimina un branch locale in modo sicuro.
+        try:
+            subprocess.check_call(
+                ['git', 'branch', '-D', branch],
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+            )
+            return True, f"Branch locale '{branch}' eliminato con successo."
+        except subprocess.CalledProcessError as e:
+            return False, str(e)
+        except Exception as e:
+            return False, str(e)
+    @staticmethod
+    def create_and_checkout(branch):
+        # Crea un nuovo branch locale e fa il checkout su di esso.
+        # Se il branch remoto esiste, lo traccia, altrimenti crea solo locale.
+        try:
+            # Prima controlla se esiste un branch remoto con questo nome
+            remote_branches = GitRepo.get_remote_branches()
+            if branch in remote_branches:
+                # Traccia il branch remoto
+                subprocess.check_call(
+                    ['git', 'checkout', '-b', branch, f'origin/{branch}'],
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                return True, f"Creato e tracciato il branch remoto '{branch}'"
+            else:
+                # Crea solo locale
+                subprocess.check_call(
+                    ['git', 'checkout', '-b', branch],
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                return True, f"Creato e spostato su nuovo branch locale '{branch}'"
+        except subprocess.CalledProcessError as e:
+            return False, str(e)
+        except Exception as e:
+            return False, str(e)
+    @staticmethod
     def is_valid_repo():
         try:
             startupinfo = None
