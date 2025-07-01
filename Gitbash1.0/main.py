@@ -6,6 +6,8 @@ from widgets import FileSelectionWindow
 from config import *
 import time
 import os, sys, atexit
+import psutil
+import socket
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
                      count_selected_files, update_counter_var)
 
@@ -544,21 +546,43 @@ class GitGuiApp(tk.Tk):
                 show_error("Errore", f"Impossibile cambiare directory:\n{e}")
 
 if __name__ == "__main__":
-    lockfile = os.path.join(os.getenv('TEMP') or '.', 'gitbash_auto.lock')
-    if os.path.exists(lockfile):
-        # Se il lockfile esiste, esci subito (anti-doppia istanza)
-        sys.exit(0)
-    with open(lockfile, 'w') as f:
-        f.write(str(os.getpid()))
-    def remove_lock():
+    # Usa una porta fissa per "ping" tra istanze (es: 54321)
+    PORT = 54321
+    HOST = "127.0.0.1"
+    def kill_existing_instance():
         try:
-            if os.path.exists(lockfile):
-                os.remove(lockfile)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.5)
+            s.connect((HOST, PORT))
+            s.send(b"KILL")
+            s.close()
+            # Attendi che l'altra istanza si chiuda
+            time.sleep(1)
         except Exception:
             pass
-    atexit.register(remove_lock)
-    try:
-        app = GitGuiApp()
-        app.mainloop()
-    finally:
-        remove_lock()
+
+    def start_kill_server():
+        import threading
+        def server():
+            srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                srv.bind((HOST, PORT))
+                srv.listen(1)
+                while True:
+                    conn, _ = srv.accept()
+                    data = conn.recv(16)
+                    if data == b"KILL":
+                        conn.close()
+                        srv.close()
+                        os._exit(0)
+                    conn.close()
+            except Exception:
+                pass
+        t = threading.Thread(target=server, daemon=True)
+        t.start()
+
+    kill_existing_instance()
+    start_kill_server()
+    app = GitGuiApp()
+    app.mainloop()
