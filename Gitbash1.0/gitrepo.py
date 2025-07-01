@@ -3,42 +3,40 @@ import subprocess
 class GitRepo:
     @staticmethod
     def delete_local_branch(branch):
-        # Elimina un branch locale in modo sicuro.
+        # Elimina un branch locale e restituisce direttamente l'output di git.
         try:
-            subprocess.check_call(
+            output = subprocess.check_output(
                 ['git', 'branch', '-D', branch],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            return True, f"Branch locale '{branch}' eliminato con successo."
+            return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, str(e)
-        except Exception as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
     @staticmethod
     def create_and_checkout(branch):
-        # Crea un nuovo branch locale e fa il checkout su di esso.
-        # Se il branch remoto esiste, lo traccia, altrimenti crea solo locale.
+        # Crea un nuovo branch locale e fa il checkout su di esso, mostra output git.
         try:
-            # Prima controlla se esiste un branch remoto con questo nome
             remote_branches = GitRepo.get_remote_branches()
             if branch in remote_branches:
-                # Traccia il branch remoto
-                subprocess.check_call(
+                output = subprocess.check_output(
                     ['git', 'checkout', '-b', branch, f'origin/{branch}'],
+                    stderr=subprocess.STDOUT,
+                    text=True,
                     creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
                 )
-                return True, f"Creato e tracciato il branch remoto '{branch}'"
+                return True, output.strip()
             else:
-                # Crea solo locale
-                subprocess.check_call(
+                output = subprocess.check_output(
                     ['git', 'checkout', '-b', branch],
+                    stderr=subprocess.STDOUT,
+                    text=True,
                     creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
                 )
-                return True, f"Creato e spostato su nuovo branch locale '{branch}'"
+                return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, str(e)
-        except Exception as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
     @staticmethod
     def is_valid_repo():
         try:
@@ -123,16 +121,16 @@ class GitRepo:
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupinfo.wShowWindow = subprocess.SW_HIDE
-            subprocess.check_call(
+            output = subprocess.check_output(
                 ['git', 'fetch'],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
                 startupinfo=startupinfo
             )
-            return True, None
+            return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, e.output
-        except Exception as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
 
     @staticmethod
     def pull(branch):
@@ -143,37 +141,40 @@ class GitRepo:
                 text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            return True, output
+            return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, e.output
-        except Exception as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
 
     @staticmethod
     def pull_force(branch):
         try:
-            subprocess.check_call(
+            output_fetch = subprocess.check_output(
                 ['git', 'fetch', 'origin', branch],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            subprocess.check_call(
+            output_reset = subprocess.check_output(
                 ['git', 'reset', '--hard', f'origin/{branch}'],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            return True, f"Forzato allineamento a origin/{branch}"
+            return True, (output_fetch + '\n' + output_reset).strip()
         except subprocess.CalledProcessError as e:
-            return False, str(e)
-        except Exception as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
 
     @staticmethod
     def push(files, branch, commit_msg):
         try:
+            output = ""
             for f in files:
-                subprocess.check_call(
+                output += subprocess.check_output(
                     ['git', 'add', f],
+                    stderr=subprocess.STDOUT,
+                    text=True,
                     creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-                )
+                ) or ""
             status = subprocess.check_output(
                 ['git', 'status', '--porcelain'],
                 text=True,
@@ -181,17 +182,21 @@ class GitRepo:
             )
             if not status.strip():
                 return False, "Nessuna modifica da committare."
-            subprocess.check_call(
+            output += subprocess.check_output(
                 ['git', 'commit', '-m', commit_msg],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            subprocess.check_call(
+            output += subprocess.check_output(
                 ['git', 'push', 'origin', branch],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            return True, "Push completato con successo."
+            return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
 
     @staticmethod
     def get_remote_branches():
@@ -220,21 +225,25 @@ class GitRepo:
     @staticmethod
     def checkout(branch):
         try:
-            subprocess.check_call(
+            output = subprocess.check_output(
                 ['git', 'checkout', branch],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            return True, f"Ora sei su '{branch}'"
+            return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
 
     @staticmethod
     def checkout_new(branch):
         try:
-            subprocess.check_call(
+            output = subprocess.check_output(
                 ['git', 'checkout', '-b', branch, f'origin/{branch}'],
+                stderr=subprocess.STDOUT,
+                text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            return True, f"Creato e spostato su '{branch}'"
+            return True, output.strip()
         except subprocess.CalledProcessError as e:
-            return False, str(e)
+            return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)

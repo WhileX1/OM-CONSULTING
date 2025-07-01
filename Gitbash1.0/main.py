@@ -34,28 +34,19 @@ class GitGuiApp(tk.Tk):
                     pass
 
     def validate_branch(self, branch):
-        # Controlla se il branch è valido e mostra warning se non lo è.
-        if branch not in self.branch_info:
-            show_warning("Branch non valido", "Branch non trovato.")
-            return False
-        return True
+        # Controlla se il branch è valido. Non mostra più warning personalizzati, lascia a git l'errore.
+        return branch in self.branch_info
 
 
     def get_valid_files(self, files):
-        # Restituisce solo i file validi, mostra errore se nessuno.
+        # Restituisce solo i file validi. Lascia a git la gestione degli errori.
         valid = [f for f in files if f and f.strip()]
-        if not valid:
-            show_error("Errore", "Nessun file selezionato.")
-            return None
         return valid
 
 
     def validate_commit_message(self, msg):
-        # Controlla se il messaggio di commit è valido, mostra errore se vuoto.
-        if not msg:
-            show_error("Errore", "Il messaggio di commit è vuoto. Inserisci un messaggio di commit.")
-            return False
-        return True
+        # Controlla se il messaggio di commit è valido. Lascia a git la gestione degli errori.
+        return bool(msg)
 
     # --- Caching per velocizzare ritorno al menu ---
     _cache_timeout = 2.0  # secondi
