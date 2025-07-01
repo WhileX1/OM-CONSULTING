@@ -7,8 +7,58 @@ import time
 import os, sys, atexit
 import ctypes
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
-                     count_selected_files, update_counter_var, get_subprocess_kwargs,
-                     show_info, show_error, show_info, show_warning)
+                     count_selected_files, update_counter_var, get_subprocess_kwargs)
+
+# --- Finestra di dialogo copiabile ---
+def show_copyable_dialog(title, message, kind="info"):
+    import tkinter as tk
+    win = tk.Toplevel()
+    win.title(title)
+    win.geometry("480x220")
+    win.resizable(True, True)
+    win.attributes("-topmost", True)
+    # Icona e colore
+    if kind == "info":
+        color = "#eaf6ff"
+    elif kind == "error":
+        color = "#ffeaea"
+    elif kind == "warning":
+        color = "#fffbe6"
+    else:
+        color = "#f8f8f8"
+    win.configure(bg=color)
+    # Testo copiabile
+    txt = tk.Text(win, wrap="word", font=("Segoe UI", 10, "bold"), bg=color, relief="flat", borderwidth=0, height=6)
+    txt.insert("1.0", message)
+    txt.config(state="normal")
+    txt.pack(padx=18, pady=(18,8), fill="both", expand=True)
+    txt.focus_set()
+    # Seleziona tutto all'apertura
+    txt.tag_add("sel", "1.0", "end")
+    # Pulsante chiudi
+    btn = tk.Button(win, text="Chiudi", command=win.destroy, font=("Segoe UI", 10, "bold"))
+    btn.pack(pady=(0,12))
+    # Copia con Ctrl+C
+    def copy_all(event=None):
+        win.clipboard_clear()
+        win.clipboard_append(txt.get("1.0", "end"))
+        return "break"
+    txt.bind("<Control-c>", copy_all)
+    txt.bind("<Control-C>", copy_all)
+    # Chiudi con Esc
+    win.bind("<Escape>", lambda e: win.destroy())
+    win.transient()
+    win.grab_set()
+    win.wait_window()
+
+def show_info(title, message):
+    show_copyable_dialog(title, message, kind="info")
+
+def show_error(title, message):
+    show_copyable_dialog(title, message, kind="error")
+
+def show_warning(title, message):
+    show_copyable_dialog(title, message, kind="warning")
 
 class GitGuiApp(tk.Tk):
     def reset_content_area(self):

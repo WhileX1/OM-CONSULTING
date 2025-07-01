@@ -7,7 +7,8 @@ from tkinter import ttk, messagebox, scrolledtext
 
 REQUIRED_MODULES = [
     "tkinter",
-    "pywin32"
+    "pywin32",
+    "psutil"
 ]
 
 
