@@ -47,15 +47,25 @@ class InstallerGUI:
         self.ok_btn = tk.Button(self.btn_frame, text="OK", command=self.root.destroy, **btn_opts)
         self.ok_btn.pack_forget()
 
+        # Frame per domanda download CLI (inizialmente nascosto)
+        self.cli_question_frame = tk.Frame(self.main_frame, bg="#f8f8f8")
+        self.cli_question_frame.pack_forget()
+        cli_label = tk.Label(self.cli_question_frame, text="Scaricare GitHub CLI?", font=("Segoe UI", 10, "bold"), bg="#f8f8f8")
+        cli_label.pack(side="left", padx=(0, 10))
+        self.cli_close_btn = tk.Button(self.cli_question_frame, text="Chiudi", font=("Segoe UI", 10, "bold"), command=self.root.destroy)
+        self.cli_close_btn.pack(side="left", padx=6)
+        self.cli_download_btn = tk.Button(self.cli_question_frame, text="Scarica", font=("Segoe UI", 10, "bold"), fg="#0057b7", cursor="hand2", command=self.open_gh_cli_url)
+        self.cli_download_btn.pack(side="left", padx=6)
+
 
         # Stato per la richiesta collegamento
         self.ask_shortcut = False
         # Pulsanti per la scelta collegamento (inizialmente nascosti)
         self.shortcut_btn_frame = tk.Frame(self.main_frame, bg="#f8f8f8")
-        btn_opts2 = dict(font=("Segoe UI", 10, "bold"), width=14, height=1)
-        self.change_folder_btn = tk.Button(self.shortcut_btn_frame, text="Cambia cartella", command=self.change_shortcut_folder, **btn_opts2)
-        self.confirm_shortcut_btn = tk.Button(self.shortcut_btn_frame, text="Conferma", command=self.confirm_shortcut, **btn_opts2)
-        # NON pack i pulsanti qui: saranno packati solo quando serve
+        self.shortcut_question_label = tk.Label(self.shortcut_btn_frame, text="Creare collegamento?", font=("Segoe UI", 10, "bold"), bg="#f8f8f8")
+        self.change_folder_btn = tk.Button(self.shortcut_btn_frame, text="Cambia cartella", command=self.change_shortcut_folder, font=("Segoe UI", 10, "bold"))
+        self.confirm_shortcut_btn = tk.Button(self.shortcut_btn_frame, text="Conferma", command=self.confirm_shortcut, font=("Segoe UI", 10, "bold"))
+        # NON pack qui: saranno packati solo quando serve
 
         # Percorso di default per il collegamento
         self.shortcut_folder = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -70,10 +80,10 @@ class InstallerGUI:
         # Gestione pulsanti in base allo stato
         if msg == "Pronto per l'installazione.":
             self.show_default_buttons()
-        elif msg.startswith("Creare collegamento sul desktop?"):
+        elif msg.startswith("Creare collegamento?"):
             self.show_shortcut_buttons()
         elif msg.startswith("Installazione completata"):
-            self.show_ok_button()
+            self.show_cli_question()
 
     def show_default_buttons(self):
         # Mostra Installa e Annulla, nasconde gli altri
@@ -88,19 +98,37 @@ class InstallerGUI:
         self.cancel_btn.pack_forget()
         self.ok_btn.pack_forget()
         self.btn_frame.pack_forget()  # Nasconde il frame dei pulsanti principali
-        # Mostra solo Cambia cartella e Conferma
+        # Mostra label domanda e i due pulsanti sulla stessa riga
         for widget in self.shortcut_btn_frame.winfo_children():
             widget.pack_forget()
-        self.change_folder_btn.pack(side=tk.LEFT, padx=8)
-        self.confirm_shortcut_btn.pack(side=tk.LEFT, padx=8)
+        self.shortcut_question_label.pack(side="left", padx=(0, 10))
+        self.change_folder_btn.pack(side="left", padx=8)
+        self.confirm_shortcut_btn.pack(side="left", padx=8)
         self.shortcut_btn_frame.pack(pady=10)
 
     def show_ok_button(self):
-        # Mostra solo OK
+        # (Non più usato: ora si mostra la domanda CLI)
         self.shortcut_btn_frame.pack_forget()
         self.start_btn.pack_forget()
         self.cancel_btn.pack_forget()
-        self.ok_btn.pack(side=tk.LEFT, padx=8)
+        self.ok_btn.pack_forget()
+
+    def show_cli_question(self):
+        # Nasconde tutti i pulsanti e mostra la domanda CLI
+        self.shortcut_btn_frame.pack_forget()
+        self.btn_frame.pack_forget()
+        self.ok_btn.pack_forget()
+        # Riposiziona i pulsanti: Chiudi a sinistra, Scarica a destra
+        for widget in self.cli_question_frame.winfo_children():
+            widget.pack_forget()
+        self.cli_question_frame.pack_forget()
+        cli_label = self.cli_question_frame.winfo_children()[0]
+        self.cli_close_btn.pack_forget()
+        self.cli_download_btn.pack_forget()
+        cli_label.pack(side="left", padx=(0, 10))
+        self.cli_close_btn.pack(side="left", padx=6)
+        self.cli_download_btn.pack(side="right", padx=6)
+        self.cli_question_frame.pack(pady=10)
 
     def change_shortcut_folder(self):
         from tkinter import filedialog
@@ -130,13 +158,11 @@ class InstallerGUI:
             # Collegamento diretto a pythonw.exe con argomento il file main.py
             create_shortcut((pythonw, f'"{target_py}"'), shortcut_path, icon_path=icon_path, description="Avvia Git Bash Automatico senza console")
             self.log_message(f"Collegamento creato: {shortcut_path}")
-            # Mostra solo il pulsante OK in fondo
+            # Mostra la domanda CLI invece del pulsante OK
             self.shortcut_btn_frame.pack_forget()
-            # Mostra solo il pulsante OK nel frame dei pulsanti principali
-            for widget in self.btn_frame.winfo_children():
-                widget.pack_forget()
-            self.btn_frame.pack(pady=10)
-            self.ok_btn.pack(side=tk.LEFT, padx=8)
+            self.btn_frame.pack_forget()
+            self.ok_btn.pack_forget()
+            self.cli_question_frame.pack(pady=10)
         except Exception as e:
             self.log_message(f"Errore creazione collegamento: {e}")
             self.shortcut_btn_frame.pack_forget()
@@ -155,7 +181,8 @@ class InstallerGUI:
         self.thread.start()
 
     def ask_shortcut_question(self):
-        self.log_message(f"Creare collegamento sul desktop?\nPercorso: {self.shortcut_folder}")
+        # Mostra la domanda collegamento come label sopra i pulsanti, non più nel log
+        self.show_shortcut_buttons()
 
     def cancel_install(self):
         self.cancelled = True
@@ -213,6 +240,12 @@ class InstallerGUI:
 
         # Al termine, mostra la domanda collegamento invece di OK
         self.ask_shortcut_question()
+
+    def open_gh_cli_url(self):
+        import webbrowser
+        webbrowser.open_new("https://github.com/cli/cli/releases/latest")
+        # Dopo il click, chiudi l'installer
+        self.root.after(500, self.root.destroy)
 
 def get_pythonw_path():
     # Trova pythonw.exe nella stessa cartella di python.exe
