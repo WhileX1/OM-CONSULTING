@@ -5,6 +5,8 @@ from widgets import FileSelectionWindow
 from config import *
 import time
 import os, sys, atexit
+import psutil
+import socket
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
                      count_selected_files, update_counter_var, get_subprocess_kwargs,
                      show_info, show_error)
@@ -579,60 +581,44 @@ class GitGuiApp(tk.Tk):
                 show_error("Errore", f"Impossibile cambiare directory:\n{e}")
 
 if __name__ == "__main__":
-    import os, sys, atexit
+    # Usa una porta fissa per "ping" tra istanze (es: 54321)
+    PORT = 54321
+    HOST = "127.0.0.1"
+    def kill_existing_instance():
 
-    lockfile = os.path.join(os.getenv('TEMP') or '.', 'gitbash_auto.lock')
-
-    def is_pid_running(pid):
         try:
-            if pid <= 0:
-                return False
-            os.kill(pid, 0)
-        except OSError:
-            return False
-        else:
-            return True
-
-
-    def check_gui_visible(app):
-        # Controlla se la GUI Tkinter è visibile per questa istanza
-        # Dopo la creazione, la finestra principale potrebbe non essere ancora "mapped".
-        # Forziamo l'update e controlliamo se è visibile.
-        app.update_idletasks()
-        app.update()
-        return app.winfo_exists() and (app.state() != 'withdrawn')
-
-    if os.path.exists(lockfile):
-        try:
-            with open(lockfile, 'r') as f:
-                pid_str = f.read().strip()
-                pid = int(pid_str) if pid_str.isdigit() else None
-        except Exception:
-            pid = None
-        if pid and is_pid_running(pid):
-            sys.exit(0)
-        else:
-            try:
-                os.remove(lockfile)
-            except Exception:
-                pass
-
-    with open(lockfile, 'w') as f:
-        f.write(str(os.getpid()))
-
-    def remove_lock():
-        try:
-            if os.path.exists(lockfile):
-                os.remove(lockfile)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.5)
+            s.connect((HOST, PORT))
+            s.send(b"KILL")
+            s.close()
+            # Attendi che l'altra istanza si chiuda
+            time.sleep(1)
         except Exception:
             pass
-    atexit.register(remove_lock)
 
-    try:
-        app = GitGuiApp()
-        if not check_gui_visible(app):
-            remove_lock()
-            sys.exit(0)
-        app.mainloop()
-    finally:
-        remove_lock()
+    def start_kill_server():
+        import threading
+        def server():
+            srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                srv.bind((HOST, PORT))
+                srv.listen(1)
+                while True:
+                    conn, _ = srv.accept()
+                    data = conn.recv(16)
+                    if data == b"KILL":
+                        conn.close()
+                        srv.close()
+                        os._exit(0)
+                    conn.close()
+            except Exception:
+                pass
+        t = threading.Thread(target=server, daemon=True)
+        t.start()
+
+    kill_existing_instance()
+    start_kill_server()
+    app = GitGuiApp()
+    app.mainloop()
