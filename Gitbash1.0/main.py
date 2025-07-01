@@ -1,6 +1,5 @@
-import subprocess
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox as mb
 from gitrepo import GitRepo
 from widgets import FileSelectionWindow
 from config import *
@@ -9,7 +8,8 @@ import os, sys, atexit
 import psutil
 import socket
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
-                     count_selected_files, update_counter_var)
+                     count_selected_files, update_counter_var, get_subprocess_kwargs,
+                     show_info, show_error)
 
 class GitGuiApp(tk.Tk):
     def reset_content_area(self):
@@ -118,6 +118,7 @@ class GitGuiApp(tk.Tk):
     @branch_info.setter
     def branch_info(self, value):
         self._branch_info = value
+
     def _clear_content_frame_widgets(self):
         # Usa la funzione centralizzata
         self.reset_content_area()
@@ -259,13 +260,16 @@ class GitGuiApp(tk.Tk):
         remote_entry.grid(row=0, column=1)
         files = self._push_files
         num_var = self._push_num_var
+
         def get_selected_count():
             return count_selected_files(files)
         file_counter_var = tk.StringVar()
+
         def update_file_counter(*args):
             update_counter_var(file_counter_var, get_selected_count, num_var)
         update_file_counter()
         num_var.trace_add("write", update_file_counter)
+
         def after_files_saved():
             update_file_counter()
         btn_select_file = tk.Button(
@@ -276,6 +280,7 @@ class GitGuiApp(tk.Tk):
         )
         btn_select_file.grid(row=0, column=2, padx=(16,0))
         tk.Label(branch_row, textvariable=file_counter_var, font=("Segoe UI", 10, "bold"), width=6, anchor="center").grid(row=0, column=3, padx=(6,0))
+        
         def periodic_update():
             update_file_counter()
             self.after(200, periodic_update)
@@ -288,6 +293,7 @@ class GitGuiApp(tk.Tk):
             commit_text.insert("1.0", self._push_commit_msg)
         bottom_frame = tk.Frame(self.main_container)
         bottom_frame.pack(side="bottom", fill="x", pady=10)
+        
         def do_push_action():
             selected_files = self.get_valid_files(files)
             if selected_files is None:
@@ -303,18 +309,31 @@ class GitGuiApp(tk.Tk):
             self._push_commit_msg = msg
             unchanged_files = []
             changed_files = []
+            # Espandi cartelle in lista file
+            def expand_dirs(paths):
+                result = []
+                for p in paths:
+                    if os.path.isdir(p):
+                        for root, dirs, files in os.walk(p):
+                            for file in files:
+                                result.append(os.path.join(root, file))
+                    else:
+                        result.append(p)
+                return result
+
+            expanded_files = expand_dirs(selected_files)
             try:
-                from helpers import get_subprocess_kwargs
                 kwargs = get_subprocess_kwargs()
+                import subprocess
                 status_lines = subprocess.check_output(
                     ['git', 'status', '--porcelain'], text=True, **kwargs
                 ).splitlines()
-                abs_selected = [os.path.abspath(f) for f in selected_files]
+                abs_selected = [os.path.abspath(f) for f in expanded_files]
                 repo_root = subprocess.check_output(
                     ['git', 'rev-parse', '--show-toplevel'], text=True, **kwargs
                 ).strip()
                 rel_selected = [os.path.relpath(f, repo_root).replace('\\', '/') for f in abs_selected]
-                for idx, f in enumerate(selected_files):
+                for idx, f in enumerate(expanded_files):
                     found = False
                     for line in status_lines:
                         line_path = line[3:] if len(line) > 3 else line.strip()
@@ -327,13 +346,13 @@ class GitGuiApp(tk.Tk):
                     else:
                         unchanged_files.append(f)
             except Exception:
-                changed_files = selected_files
+                changed_files = expanded_files
                 unchanged_files = []
             if not changed_files:
                 from helpers import show_info
                 show_info("Nessuna modifica", "File {} senza modifiche".format(", ".join(os.path.basename(f) for f in unchanged_files)))
                 return
-            ok, push_msg = GitRepo.push(changed_files, branch_name, msg)
+            ok, push_msg = GitRepo.push(changed_files, branch_name, msg, ask_confirm_new_remote=True)
             from helpers import show_info, show_error
             if ok:
                 self.invalidate_cache()
@@ -341,6 +360,7 @@ class GitGuiApp(tk.Tk):
             else:
                 show_error("Errore Push", push_msg)
             self.update_dir_label(force_refresh=True)
+        
         def on_back():
             self._push_commit_msg = commit_text.get("1.0", "end").strip()
             self.show_menu()
@@ -382,10 +402,24 @@ class GitGuiApp(tk.Tk):
         )
 
     def _do_checkout_action(self, branch, _force_var=None):
-        if not self.validate_branch(branch):
+        # Se il branch non esiste, mostra solo la domanda di creazione, senza doppio avviso
+        if branch not in self.branch_info:
+            res = mb.askyesno(
+                "Branch non trovato",
+                f"Il branch '{branch}' non esiste.\n\nVuoi creare un nuovo branch con questo nome?"
+            )
+            if res:
+                ok, msg = GitRepo.create_and_checkout(branch)
+                if ok:
+                    self.invalidate_cache()
+                    self._update_branch_info()  # Aggiorna la lista dei branch
+                    self.update_dir_label(force_refresh=True)
+                    self.check_repo(force_refresh=True)
+                    show_info("Nuovo branch", f"{msg}")
+                else:
+                    show_error("Errore creazione branch", msg)
             return
         ok, msg = GitRepo.checkout(branch)
-        from helpers import show_info, show_error
         if ok:
             self.invalidate_cache()
             self.update_dir_label(force_refresh=True)
@@ -405,6 +439,7 @@ class GitGuiApp(tk.Tk):
                 font=("Segoe UI", 10, "bold"), anchor="center"
             )
             force_chk.pack(side="left", expand=True, padx=10)
+        
         def on_confirm():
             branch = entry_var.get().strip()
             if show_force:
@@ -550,6 +585,7 @@ if __name__ == "__main__":
     PORT = 54321
     HOST = "127.0.0.1"
     def kill_existing_instance():
+
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.settimeout(0.5)

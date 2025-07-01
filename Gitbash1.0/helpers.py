@@ -2,6 +2,7 @@ import sys
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
+import subprocess
 from config import LAST_DIR_FILE
 
 class MouseWheelHelper:
@@ -120,8 +121,7 @@ def show_info(title, message):
 
     # Helper universale per subprocess: nasconde sempre la console su Windows
 def get_subprocess_kwargs():
-    """Restituisce i parametri startupinfo e creationflags per nascondere la console su Windows."""
-    import subprocess
+    # Restituisce i parametri startupinfo e creationflags per nascondere la console su Windows.
     kwargs = {}
     if sys.platform.startswith("win"):
         if hasattr(subprocess, 'STARTF_USESHOWWINDOW'):

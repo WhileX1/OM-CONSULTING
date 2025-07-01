@@ -1,6 +1,32 @@
 import subprocess
+from tkinter import messagebox as mb
 
 class GitRepo:
+    @staticmethod
+    def create_and_checkout(branch):
+        """
+        Crea un nuovo branch locale e fa il checkout su di esso.
+        Restituisce (ok, msg).
+        """
+        try:
+            subprocess.check_call(
+                ['git', 'checkout', '-b', branch],
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+            )
+            return True, f"Creato e spostato su '{branch}'"
+        except subprocess.CalledProcessError as e:
+            # Prova a capire se il branch esiste già
+            try:
+                output = subprocess.check_output(
+                    ['git', 'branch', '--list', branch],
+                    text=True,
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                if output.strip():
+                    return False, f"Il branch '{branch}' esiste già."
+            except Exception:
+                pass
+            return False, f"Errore nella creazione del branch: {str(e)}"
     @staticmethod
     def is_valid_repo():
         try:
@@ -129,7 +155,17 @@ class GitRepo:
             return False, str(e)
 
     @staticmethod
-    def push(files, branch, commit_msg):
+    def push(files, branch, commit_msg, ask_confirm_new_remote=True):
+        # Controlla se il branch remoto esiste
+        def remote_branch_exists(branch):
+            try:
+                remotes = subprocess.check_output(
+                    ['git', 'branch', '-r'], text=True, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                return any(f'origin/{branch}' == b.strip() for b in remotes.splitlines())
+            except Exception:
+                return False
+
         try:
             for f in files:
                 subprocess.check_call(
@@ -147,11 +183,31 @@ class GitRepo:
                 ['git', 'commit', '-m', commit_msg],
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
-            subprocess.check_call(
-                ['git', 'push', 'origin', branch],
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-            )
-            return True, "Push completato con successo."
+
+            # Se il branch remoto non esiste, chiedi conferma e fai push con --set-upstream
+            if not remote_branch_exists(branch):
+                if ask_confirm_new_remote:
+                    try:
+                        res = mb.askyesno(
+                            "Nuovo branch remoto",
+                            f"Il branch remoto 'origin/{branch}' non esiste.\nVuoi crearlo e impostare il tracking remoto?"
+                        )
+                        if not res:
+                            return False, "Push annullato dall'utente."
+                    except Exception:
+                        # In caso di errore nella GUI, procedi comunque
+                        pass
+                subprocess.check_call(
+                    ['git', 'push', '--set-upstream', 'origin', branch],
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                return True, f"Push completato e branch remoto creato: origin/{branch}"
+            else:
+                subprocess.check_call(
+                    ['git', 'push', 'origin', branch],
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                return True, "Push completato con successo."
         except subprocess.CalledProcessError as e:
             return False, str(e)
 
