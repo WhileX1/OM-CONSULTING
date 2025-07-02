@@ -711,12 +711,20 @@ class GitGuiApp(tk.Tk):
     def _do_login(self):
         """Esegue il login a GitHub"""
         try:
-            # Usa GitHub CLI per il login
+            # Informa l'utente che si aprirà una console
+            result = mb.askyesno("Login GitHub", 
+                               "Si aprirà una finestra del terminale per completare il login.\n"
+                               "Segui le istruzioni mostrate nel terminale.\n\n"
+                               "Vuoi continuare?")
+            if not result:
+                return
+            
+            # Usa GitHub CLI per il login - NON nascondere la console per l'interazione
             result = subprocess.run(
                 ['gh', 'auth', 'login'],
                 capture_output=False,
-                text=True,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                text=True
+                # Rimuovo CREATE_NO_WINDOW per permettere l'interazione
             )
             if result.returncode == 0:
                 self.invalidate_cache()
