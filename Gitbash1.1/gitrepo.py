@@ -268,9 +268,20 @@ class GitRepo:
             
             # Estrae il nome utente dall'output
             for line in output.split('\n'):
-                if 'Logged in to github.com as' in line:
-                    username = line.split('as ')[-1].split(' ')[0]
-                    return username
+                line = line.strip()
+                # Cerca la riga "Logged in to github.com account USERNAME"
+                if 'Logged in to github.com account' in line:
+                    # Estrae la parte dopo "account " e prima di " (keyring)"
+                    parts = line.split('account ')
+                    if len(parts) > 1:
+                        username_part = parts[1]
+                        # Rimuove " (keyring)" se presente
+                        if ' (' in username_part:
+                            username = username_part.split(' (')[0]
+                        else:
+                            username = username_part.split(' ')[0]
+                        return username.strip()
+            
             return "(non autenticato)"
         except subprocess.CalledProcessError:
             return "(non autenticato)"

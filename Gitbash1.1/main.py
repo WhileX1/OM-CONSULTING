@@ -48,12 +48,15 @@ class GitGuiApp(tk.Tk):
         # Controlla se il messaggio di commit è valido. Lascia a git la gestione degli errori.
         return bool(msg)
 
-    # --- Caching per velocizzare ritorno al menu ---
-    _cache_timeout = 2.0  # secondi
+    # --- Caching ottimizzato per ridurre chiamate frequenti ---
+    _cache_timeout = 30.0  # Aumentato da 2 a 30 secondi
     _cached_branch = None
     _cached_origin = None
+    _cached_github_user = None
     _cached_is_repo = None
     _cache_time = 0
+    _github_user_needs_update = False  # Flag per aggiornamento utente GitHub
+    _branches_fetched_on_startup = False  # Flag per evitare fetch multipli
     
     # set_placeholder e clear_placeholder ora sono in helpers.py
     def __init__(self):
@@ -85,7 +88,9 @@ class GitGuiApp(tk.Tk):
         self.button_frame = None
         self.content_frame = tk.Frame(self.main_container)
         self.content_frame.pack(fill="both", expand=True)
-        self._update_branch_info()
+        # Aggiorna i branch solo una volta all'avvio per rimuovere quelli eliminati dal remoto
+        self._update_branch_info(prune=True)
+        self._branches_fetched_on_startup = True
         self.create_buttons()
         self.update_dir_label()
         self.check_repo()
@@ -178,23 +183,36 @@ class GitGuiApp(tk.Tk):
 
     def update_dir_label(self, force_refresh=False):
         now = time.time()
-        if force_refresh or (now - self._cache_time > self._cache_timeout) or self._cached_branch is None or self._cached_origin is None:
+        cache_expired = (now - self._cache_time > self._cache_timeout)
+        
+        # Aggiorna branch e origin solo se necessario
+        if force_refresh or cache_expired or self._cached_branch is None or self._cached_origin is None:
             self._cached_branch = GitRepo.get_current_branch()
             self._cached_origin = GitRepo.get_current_origin()
-            self._cached_github_user = GitRepo.get_github_user()
             self._cache_time = now
+        
+        # Aggiorna utente GitHub solo se richiesto esplicitamente
+        if self._github_user_needs_update or self._cached_github_user is None:
+            self._cached_github_user = GitRepo.get_github_user()
+            self._github_user_needs_update = False
+        
         branch = self._cached_branch
         origin = self._cached_origin
-        github_user = getattr(self, '_cached_github_user', GitRepo.get_github_user())
+        github_user = self._cached_github_user
         cwd = os.getcwd()
         self.dir_label.config(text=f"📁 Directory: {cwd}\n ➥ Branch: {branch}\n🔍 Origine: {origin}\n👤 GitHub: {github_user}")
 
     def invalidate_cache(self):
+        """Invalida la cache per branch e origin (non per utente GitHub)"""
         self._cached_branch = None
         self._cached_origin = None
-        self._cached_github_user = None
         self._cached_is_repo = None
         self._cache_time = 0
+
+    def invalidate_github_user_cache(self):
+        """Invalida solo la cache dell'utente GitHub"""
+        self._cached_github_user = None
+        self._github_user_needs_update = True
 
     @staticmethod
     def is_valid_branch(branch, branches):
@@ -216,7 +234,7 @@ class GitGuiApp(tk.Tk):
             self.btn_branch.config(state="normal")
 
     def do_pull(self):
-        self._update_branch_info(prune=True)
+        # Non aggiornare la lista branch all'apertura della sezione Pull
         self._show_branch_section(
             title="Seleziona o filtra il branch da cui fare Pull:",
             action_btn_text="Esegui Pull",
@@ -402,7 +420,7 @@ class GitGuiApp(tk.Tk):
         # Nessun codice UI qui: solo gestione della finestra di selezione file
 
     def do_branch(self):
-        self._update_branch_info()
+        # Non aggiornare la lista branch all'apertura della sezione Branch
         self._show_branch_section(
             title="Seleziona o filtra il branch:",
             action_btn_text="Cambia branch",
@@ -428,7 +446,7 @@ class GitGuiApp(tk.Tk):
                 ok, msg = GitRepo.create_and_checkout(branch)
                 if ok:
                     self.invalidate_cache()
-                    self._update_branch_info()  # Aggiorna la lista dei branch
+                    self._update_branch_info(prune=False)  # Aggiorna la lista dei branch
                     self.update_dir_label(force_refresh=True)
                     self.check_repo(force_refresh=True)
                     show_info("Nuovo branch", f"{msg}")
@@ -544,7 +562,8 @@ class GitGuiApp(tk.Tk):
             ok, msg = GitRepo.delete_local_branch(branch)
             if ok:
                 self.invalidate_cache()
-                self._update_branch_info(prune=True)
+                # Non fare prune qui, solo aggiorna la lista branch senza fetch
+                self._update_branch_info(prune=False)
                 self.update_dir_label(force_refresh=True)
                 show_info("Branch eliminato", msg)
                 entry_var.set("")
@@ -666,7 +685,9 @@ class GitGuiApp(tk.Tk):
             try:
                 os.chdir(new_dir)
                 save_last_dir(new_dir)
+                # Invalida TUTTA la cache dopo cambio directory
                 self.invalidate_cache()
+                self.invalidate_github_user_cache()  # Potrebbe cambiare anche l'utente GitHub
                 self.update_dir_label(force_refresh=True)
                 self.check_repo(force_refresh=True)
                 show_info("Cambio directory", f"Directory cambiata in:\n{os.getcwd()}")
@@ -719,8 +740,9 @@ class GitGuiApp(tk.Tk):
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
             if result.returncode == 0:
-                self.invalidate_cache()
-                self.update_dir_label(force_refresh=True)
+                # Aggiorna SOLO l'utente GitHub dopo il login
+                self.invalidate_github_user_cache()
+                self.update_dir_label()
                 show_info("Login", "Login a GitHub eseguito con successo!")
             else:
                 show_error("Errore Login", "Errore durante il login. Assicurati di avere GitHub CLI installato.")
@@ -748,8 +770,9 @@ class GitGuiApp(tk.Tk):
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
             if result.returncode == 0:
-                self.invalidate_cache()
-                self.update_dir_label(force_refresh=True)
+                # Aggiorna SOLO l'utente GitHub dopo il logout
+                self.invalidate_github_user_cache()
+                self.update_dir_label()
                 show_info("Logout", "Logout da GitHub eseguito con successo!")
             else:
                 show_error("Errore Logout", f"Errore durante il logout: {result.stderr}")
