@@ -337,8 +337,6 @@ class GitGuiApp(tk.Tk):
             # Ottieni il valore del checkbox force
             force_push = force_var.get()
             
-            unchanged_files = []
-            changed_files = []
             # Espandi cartelle in lista file
             def expand_dirs(paths):
                 result = []
@@ -352,49 +350,77 @@ class GitGuiApp(tk.Tk):
                 return result
 
             expanded_files = expand_dirs(selected_files)
+            
             try:
                 kwargs = get_subprocess_kwargs()
-                status_lines = subprocess.check_output(
-                    ['git', 'status', '--porcelain'], text=True, **kwargs
-                ).splitlines()
-                abs_selected = [os.path.abspath(f) for f in expanded_files]
+                # Ottieni la root della repository
                 repo_root = subprocess.check_output(
                     ['git', 'rev-parse', '--show-toplevel'], text=True, **kwargs
                 ).strip()
-                rel_selected = [os.path.relpath(f, repo_root).replace('\\', '/') for f in abs_selected]
                 
-                # Ottieni lista dei file tracciati da git
-                try:
-                    tracked_files = subprocess.check_output(
-                        ['git', 'ls-tree', '-r', '--name-only', 'HEAD'], text=True, **kwargs
-                    ).splitlines()
-                    tracked_files = [f.replace('\\', '/') for f in tracked_files]
-                except subprocess.CalledProcessError:
-                    # Se non ci sono commit, non ci sono file tracciati
-                    tracked_files = []
+                # Ottieni lo status dei file
+                status_lines = subprocess.check_output(
+                    ['git', 'status', '--porcelain'], text=True, **kwargs
+                ).splitlines()
                 
-                for idx, f in enumerate(expanded_files):
-                    rel_path = rel_selected[idx]
-                    found_in_status = False
-                    
-                    # Controlla se il file è modificato secondo git status
-                    for line in status_lines:
-                        line_path = line[3:] if len(line) > 3 else line.strip()
-                        if os.path.basename(f) == os.path.basename(line_path) or \
-                           line_path.replace('\\', '/') == rel_path:
-                            found_in_status = True
-                            break
-                    
-                    # Se il file è modificato O non è tracciato, consideralo come "changed"
-                    if found_in_status or rel_path not in tracked_files:
+                # Crea un set di file modificati secondo git (percorsi relativi normalizzati)
+                modified_files = set()
+                for line in status_lines:
+                    if len(line) > 3:
+                        # Estrae il percorso del file dalla riga di status
+                        file_path = line[3:].strip()
+                        # Normalizza il percorso (usa sempre /)
+                        file_path = file_path.replace('\\', '/')
+                        modified_files.add(file_path)
+                
+                # Processa i file selezionati
+                changed_files = []
+                unchanged_files = []
+                
+                for f in expanded_files:
+                    # Converte il percorso assoluto in relativo rispetto alla repo root
+                    abs_path = os.path.abspath(f)
+                    try:
+                        rel_path = os.path.relpath(abs_path, repo_root)
+                        # Normalizza il percorso (usa sempre /)
+                        rel_path = rel_path.replace('\\', '/')
+                        
+                        # Controlla se il file è modificato o è nuovo
+                        if rel_path in modified_files:
+                            changed_files.append(f)
+                        else:
+                            # Controlla se il file esiste ma non è tracciato
+                            if os.path.exists(abs_path):
+                                try:
+                                    # Verifica se il file è tracciato da git
+                                    subprocess.check_output(
+                                        ['git', 'ls-files', '--error-unmatch', rel_path],
+                                        text=True, stderr=subprocess.DEVNULL, **kwargs
+                                    )
+                                    # Se arriviamo qui, il file è tracciato ma non modificato
+                                    unchanged_files.append(f)
+                                except subprocess.CalledProcessError:
+                                    # Il file non è tracciato, quindi è nuovo e va aggiunto
+                                    changed_files.append(f)
+                            else:
+                                unchanged_files.append(f)
+                    except Exception:
+                        # In caso di errore, considera il file come modificato
                         changed_files.append(f)
-                    else:
-                        unchanged_files.append(f)
-            except Exception:
+                        
+            except Exception as e:
+                # In caso di errore generale, usa tutti i file selezionati
+                show_warning("Avviso", f"Errore nel rilevamento modifiche: {str(e)}\nVerranno processati tutti i file selezionati.")
                 changed_files = expanded_files
                 unchanged_files = []
+            
+            # Informa l'utente sui file che verranno processati
+            if unchanged_files:
+                unchanged_names = [os.path.basename(f) for f in unchanged_files]
+                show_info("File senza modifiche", f"I seguenti file non hanno modifiche e non verranno inclusi nel commit:\n{', '.join(unchanged_names)}")
+            
             if not changed_files:
-                show_info("Nessuna modifica", "File {} senza modifiche".format(", ".join(os.path.basename(f) for f in unchanged_files)))
+                show_info("Nessuna modifica", "Nessun file selezionato ha modifiche da committare.")
                 return
             
             # Passa il parametro force al metodo push
