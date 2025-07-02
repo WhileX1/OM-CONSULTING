@@ -165,7 +165,7 @@ class GitRepo:
             return False, e.output.strip() if hasattr(e, 'output') and e.output else str(e)
 
     @staticmethod
-    def push(files, branch, commit_msg):
+    def push(files, branch, commit_msg, force=False):
         try:
             output = ""
             for f in files:
@@ -188,8 +188,14 @@ class GitRepo:
                 text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
             )
+            
+            # Push con o senza force
+            push_cmd = ['git', 'push', 'origin', branch]
+            if force:
+                push_cmd.insert(2, '--force')  # git push --force origin branch
+            
             output += subprocess.check_output(
-                ['git', 'push', 'origin', branch],
+                push_cmd,
                 stderr=subprocess.STDOUT,
                 text=True,
                 creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)

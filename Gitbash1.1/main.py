@@ -200,7 +200,7 @@ class GitGuiApp(tk.Tk):
         origin = self._cached_origin
         github_user = self._cached_github_user
         cwd = os.getcwd()
-        self.dir_label.config(text=f"📁 Directory: {cwd}\n ➥ Branch: {branch}\n🔍 Origine: {origin}\n👤 GitHub: {github_user}")
+        self.dir_label.config(text=f"📁 Directory: {cwd}\n ➥ Branch: {branch}\n🔍 Origine: {origin}\n 👤 GitHub: {github_user}")
 
     def invalidate_cache(self):
         """Invalida la cache per branch e origin (non per utente GitHub)"""
@@ -312,8 +312,12 @@ class GitGuiApp(tk.Tk):
         if self._push_commit_msg:
             commit_text.delete("1.0", "end")
             commit_text.insert("1.0", self._push_commit_msg)
+        
         bottom_frame = tk.Frame(self.main_container)
         bottom_frame.pack(side="bottom", fill="x", pady=10)
+        
+        # Aggiungi il checkbox Force push nella stessa riga dei pulsanti
+        force_var = tk.BooleanVar(value=False)
         
         def do_push_action():
             selected_files = self.get_valid_files(files)
@@ -327,6 +331,10 @@ class GitGuiApp(tk.Tk):
             if not self.validate_commit_message(msg):
                 return
             self._push_commit_msg = msg
+            
+            # Ottieni il valore del checkbox force
+            force_push = force_var.get()
+            
             unchanged_files = []
             changed_files = []
             # Espandi cartelle in lista file
@@ -386,7 +394,9 @@ class GitGuiApp(tk.Tk):
             if not changed_files:
                 show_info("Nessuna modifica", "File {} senza modifiche".format(", ".join(os.path.basename(f) for f in unchanged_files)))
                 return
-            ok, push_msg = GitRepo.push(changed_files, branch_name, msg)
+            
+            # Passa il parametro force al metodo push
+            ok, push_msg = GitRepo.push(changed_files, branch_name, msg, force=force_push)
             if ok:
                 self.invalidate_cache()
                 show_info("Successo", f"Push eseguito con successo al branch {branch_name}")
