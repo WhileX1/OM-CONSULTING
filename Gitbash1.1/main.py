@@ -52,6 +52,7 @@ class GitGuiApp(tk.Tk):
     _cache_timeout = 2.0  # secondi
     _cached_branch = None
     _cached_origin = None
+    _cached_github_user = None
     _cached_is_repo = None
     _cache_time = 0
     
@@ -178,14 +179,15 @@ class GitGuiApp(tk.Tk):
 
     def update_dir_label(self, force_refresh=False):
         now = time.time()
-        if force_refresh or (now - self._cache_time > self._cache_timeout) or self._cached_branch is None or self._cached_origin is None:
+        if force_refresh or (now - self._cache_time > self._cache_timeout) or self._cached_branch is None or self._cached_origin is None or self._cached_github_user is None:
             self._cached_branch = GitRepo.get_current_branch()
             self._cached_origin = GitRepo.get_current_origin()
             self._cached_github_user = GitRepo.get_github_user()
             self._cache_time = now
         branch = self._cached_branch
         origin = self._cached_origin
-        github_user = getattr(self, '_cached_github_user', GitRepo.get_github_user())
+        # Usa sempre il valore dalla cache aggiornata
+        github_user = self._cached_github_user
         cwd = os.getcwd()
         self.dir_label.config(text=f"📁 Directory: {cwd}\n ➥ Branch: {branch}\n🔍 Origine: {origin}\n👤 GitHub: {github_user}")
 
@@ -727,9 +729,20 @@ class GitGuiApp(tk.Tk):
                 # Rimuovo CREATE_NO_WINDOW per permettere l'interazione
             )
             if result.returncode == 0:
+                # Aspetta un momento per GitHub CLI per aggiornare lo stato
+                import time
+                time.sleep(1)
+                
+                # Invalida completamente la cache e forza l'aggiornamento
                 self.invalidate_cache()
                 self.update_dir_label(force_refresh=True)
-                show_info("Login", "Login a GitHub eseguito con successo!")
+                
+                # Verifica che l'utente sia effettivamente autenticato
+                github_user = GitRepo.get_github_user()
+                if github_user != "(non autenticato)":
+                    show_info("Login", f"Login a GitHub eseguito con successo!\nUtente: {github_user}")
+                else:
+                    show_warning("Login", "Login completato, ma l'utente non risulta ancora autenticato.\nProva ad aggiornare premendo il pulsante 'Cambia directory'.")
             else:
                 show_error("Errore Login", "Errore durante il login. Assicurati di avere GitHub CLI installato.")
         except FileNotFoundError:
@@ -766,6 +779,48 @@ class GitGuiApp(tk.Tk):
                       "GitHub CLI non è installato o non è nel PATH.")
         except Exception as e:
             show_error("Errore", f"Errore durante il logout: {str(e)}")
+
+    def _debug_github_status(self):
+        """Debug: mostra l'output completo di gh auth status"""
+        try:
+            import subprocess
+            
+            # Esegui gh auth status e cattura tutto l'output
+            result = subprocess.run(
+                ['gh', 'auth', 'status'],
+                capture_output=True,
+                text=True,
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+            )
+            
+            output_text = f"Return code: {result.returncode}\n\n"
+            output_text += f"STDOUT:\n{result.stdout}\n\n"
+            output_text += f"STDERR:\n{result.stderr}\n\n"
+            
+            # Test del parsing
+            user = GitRepo.get_github_user()
+            output_text += f"Parsed user: {user}"
+            
+            # Mostra in una finestra di dialogo con scroll
+            debug_window = tk.Toplevel(self)
+            debug_window.title("Debug GitHub Status")
+            debug_window.geometry("600x400")
+            
+            text_widget = tk.Text(debug_window, wrap="word", font=("Courier", 10))
+            scrollbar = tk.Scrollbar(debug_window, command=text_widget.yview)
+            text_widget.config(yscrollcommand=scrollbar.set)
+            
+            text_widget.pack(side="left", fill="both", expand=True, padx=(10, 0), pady=10)
+            scrollbar.pack(side="right", fill="y", pady=10, padx=(0, 10))
+            
+            text_widget.insert("1.0", output_text)
+            text_widget.config(state="disabled")
+            
+            # Pulsante chiudi
+            tk.Button(debug_window, text="Chiudi", command=debug_window.destroy).pack(pady=5)
+            
+        except Exception as e:
+            show_error("Errore Debug", f"Errore durante il debug: {str(e)}")
 
 if __name__ == "__main__":
     lockfile = os.path.join(os.getenv('TEMP') or '.', 'gitbash_auto.lock')
