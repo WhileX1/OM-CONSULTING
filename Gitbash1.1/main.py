@@ -414,11 +414,6 @@ class GitGuiApp(tk.Tk):
                 changed_files = expanded_files
                 unchanged_files = []
             
-            # Informa l'utente sui file che verranno processati
-            if unchanged_files:
-                unchanged_names = [os.path.basename(f) for f in unchanged_files]
-                show_info("File senza modifiche", f"I seguenti file non hanno modifiche e non verranno inclusi nel commit:\n{', '.join(unchanged_names)}")
-            
             if not changed_files:
                 show_info("Nessuna modifica", "Nessun file selezionato ha modifiche da committare.")
                 return
