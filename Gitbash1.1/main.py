@@ -351,75 +351,9 @@ class GitGuiApp(tk.Tk):
 
             expanded_files = expand_dirs(selected_files)
             
-            try:
-                kwargs = get_subprocess_kwargs()
-                # Ottieni la root della repository
-                repo_root = subprocess.check_output(
-                    ['git', 'rev-parse', '--show-toplevel'], text=True, **kwargs
-                ).strip()
-                
-                # Ottieni lo status dei file
-                status_lines = subprocess.check_output(
-                    ['git', 'status', '--porcelain'], text=True, **kwargs
-                ).splitlines()
-                
-                # Crea un set di file modificati secondo git (percorsi relativi normalizzati)
-                modified_files = set()
-                for line in status_lines:
-                    if len(line) > 3:
-                        # Estrae il percorso del file dalla riga di status
-                        file_path = line[3:].strip()
-                        # Normalizza il percorso (usa sempre /)
-                        file_path = file_path.replace('\\', '/')
-                        modified_files.add(file_path)
-                
-                # Processa i file selezionati
-                changed_files = []
-                unchanged_files = []
-                
-                for f in expanded_files:
-                    # Converte il percorso assoluto in relativo rispetto alla repo root
-                    abs_path = os.path.abspath(f)
-                    try:
-                        rel_path = os.path.relpath(abs_path, repo_root)
-                        # Normalizza il percorso (usa sempre /)
-                        rel_path = rel_path.replace('\\', '/')
-                        
-                        # Controlla se il file è modificato o è nuovo
-                        if rel_path in modified_files:
-                            changed_files.append(f)
-                        else:
-                            # Controlla se il file esiste ma non è tracciato
-                            if os.path.exists(abs_path):
-                                try:
-                                    # Verifica se il file è tracciato da git
-                                    subprocess.check_output(
-                                        ['git', 'ls-files', '--error-unmatch', rel_path],
-                                        text=True, stderr=subprocess.DEVNULL, **kwargs
-                                    )
-                                    # Se arriviamo qui, il file è tracciato ma non modificato
-                                    unchanged_files.append(f)
-                                except subprocess.CalledProcessError:
-                                    # Il file non è tracciato, quindi è nuovo e va aggiunto
-                                    changed_files.append(f)
-                            else:
-                                unchanged_files.append(f)
-                    except Exception:
-                        # In caso di errore, considera il file come modificato
-                        changed_files.append(f)
-                        
-            except Exception as e:
-                # In caso di errore generale, usa tutti i file selezionati
-                show_warning("Avviso", f"Errore nel rilevamento modifiche: {str(e)}\nVerranno processati tutti i file selezionati.")
-                changed_files = expanded_files
-                unchanged_files = []
-            
-            if not changed_files:
-                show_info("Nessuna modifica", "Nessun file selezionato ha modifiche da committare.")
-                return
-            
-            # Passa il parametro force al metodo push
-            ok, push_msg = GitRepo.push(changed_files, branch_name, msg, force=force_push)
+            # Passa tutti i file selezionati direttamente a Git
+            # Git gestirà automaticamente quali file hanno modifiche
+            ok, push_msg = GitRepo.push(expanded_files, branch_name, msg, force=force_push)
             if ok:
                 self.invalidate_cache()
                 show_info("Successo", f"Push eseguito con successo al branch {branch_name}")
