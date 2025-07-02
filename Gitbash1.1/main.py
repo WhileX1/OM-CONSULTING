@@ -6,6 +6,7 @@ from config import *
 import time
 import os, sys, atexit
 import ctypes
+import threading
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
                      count_selected_files, update_counter_var, get_subprocess_kwargs,
                      show_warning, show_info, show_error)
@@ -57,6 +58,7 @@ class GitGuiApp(tk.Tk):
     _cache_time = 0
     _github_user_needs_update = False  # Flag per aggiornamento utente GitHub
     _branches_fetched_on_startup = False  # Flag per evitare fetch multipli
+    _login_in_progress = False  # Flag per indicare login in corso
     
     # set_placeholder e clear_placeholder ora sono in helpers.py
     def __init__(self):
@@ -407,7 +409,18 @@ class GitGuiApp(tk.Tk):
         def on_back():
             self._push_commit_msg = commit_text.get("1.0", "end").strip()
             self.show_menu()
+        
         tk.Button(bottom_frame, text="Indietro", command=on_back, font=("Segoe UI", 10, "bold")).pack(side="left", padx=10)
+        
+        # Checkbox Force push al centro
+        force_chk = tk.Checkbutton(
+            bottom_frame, 
+            text="Force push", 
+            variable=force_var,
+            font=("Segoe UI", 10, "bold")
+        )
+        force_chk.pack(side="left", expand=True, padx=10)
+        
         tk.Button(bottom_frame, text="Esegui Push", command=do_push_action, font=("Segoe UI", 10, "bold")).pack(side="right", padx=10)
 
     def ensure_file_selection_window(self, files, num_var, after_files_saved):
@@ -740,28 +753,83 @@ class GitGuiApp(tk.Tk):
                  font=("Segoe UI", 10, "bold")).pack(side="left", padx=10)
 
     def _do_login(self):
-        """Esegue il login a GitHub"""
+        """Esegue il login a GitHub in modalità non bloccante"""
         try:
-            # Usa GitHub CLI per il login
-            result = subprocess.run(
-                ['gh', 'auth', 'login'],
-                capture_output=False,
-                text=True,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-            )
-            if result.returncode == 0:
-                # Aggiorna SOLO l'utente GitHub dopo il login
-                self.invalidate_github_user_cache()
-                self.update_dir_label()
-                show_info("Login", "Login a GitHub eseguito con successo!")
-            else:
-                show_error("Errore Login", "Errore durante il login. Assicurati di avere GitHub CLI installato.")
-        except FileNotFoundError:
-            show_error("GitHub CLI non trovato", 
-                      "GitHub CLI non è installato o non è nel PATH.\n"
-                      "Scaricalo da: https://cli.github.com/")
+            # Controlla se c'è già un login in corso
+            if self._login_in_progress:
+                show_info("Login in corso", "C'è già un processo di login in corso. Attendi che si completi.")
+                return
+            
+            # Informa l'utente che si aprirà una console
+            result = mb.askyesno("Login GitHub", 
+                               "Si aprirà una finestra del terminale per completare il login.\n"
+                               "L'app rimarrà utilizzabile durante il processo.\n\n"
+                               "Vuoi continuare?")
+            if not result:
+                return
+            
+            # Avvia il login in un thread separato
+            self._login_in_progress = True
+            self._update_login_button_state()
+            
+            def login_thread():
+                try:
+                    # Usa GitHub CLI per il login - MOSTRA la console per l'interazione
+                    result = subprocess.run(
+                        ['gh', 'auth', 'login'],
+                        capture_output=False,
+                        text=True
+                        # Rimuovo CREATE_NO_WINDOW per permettere l'interazione
+                    )
+                    
+                    # Pianifica l'aggiornamento dell'UI nel thread principale
+                    def update_ui():
+                        self._login_in_progress = False
+                        self._update_login_button_state()
+                        
+                        if result.returncode == 0:
+                            # Aggiorna SOLO l'utente GitHub dopo il login
+                            self.invalidate_github_user_cache()
+                            self.update_dir_label()
+                            show_info("Login", "Login a GitHub eseguito con successo!")
+                        else:
+                            show_error("Errore Login", "Errore durante il login. Assicurati di avere GitHub CLI installato.")
+                    
+                    # Esegue l'aggiornamento UI nel thread principale
+                    self.after(0, update_ui)
+                    
+                except FileNotFoundError:
+                    def show_error_ui():
+                        self._login_in_progress = False
+                        self._update_login_button_state()
+                        show_error("GitHub CLI non trovato", 
+                                  "GitHub CLI non è installato o non è nel PATH.\n"
+                                  "Scaricalo da: https://cli.github.com/")
+                    self.after(0, show_error_ui)
+                    
+                except Exception as e:
+                    def show_error_ui():
+                        self._login_in_progress = False
+                        self._update_login_button_state()
+                        show_error("Errore", f"Errore durante il login: {str(e)}")
+                    self.after(0, show_error_ui)
+            
+            # Avvia il thread del login
+            thread = threading.Thread(target=login_thread, daemon=True)
+            thread.start()
+            
         except Exception as e:
-            show_error("Errore", f"Errore durante il login: {str(e)}")
+            self._login_in_progress = False
+            self._update_login_button_state()
+            show_error("Errore", f"Errore durante l'avvio del login: {str(e)}")
+
+    def _update_login_button_state(self):
+        """Aggiorna lo stato del pulsante login in base al processo in corso"""
+        if hasattr(self, 'btn_login') and self.btn_login.winfo_exists():
+            if self._login_in_progress:
+                self.btn_login.config(text="Login in corso...", state="disabled")
+            else:
+                self.btn_login.config(text="Login", state="normal")
 
     def _do_logout(self):
         """Esegue il logout da GitHub"""
@@ -771,21 +839,74 @@ class GitGuiApp(tk.Tk):
                                "Sei sicuro di voler effettuare il logout da GitHub?")
             if not result:
                 return
-                
-            # Usa GitHub CLI per il logout
-            result = subprocess.run(
-                ['gh', 'auth', 'logout'],
-                capture_output=True,
-                text=True,
-                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
-            )
-            if result.returncode == 0:
+            
+            # Prima ottieni l'utente corrente
+            current_user = GitRepo.get_github_user()
+            if current_user == "(non autenticato)" or current_user == "(GitHub CLI non installato)" or current_user == "(errore)":
+                show_info("Logout", "Non sei attualmente autenticato su GitHub.")
+                return
+            
+            # Prova diversi approcci per il logout
+            logout_success = False
+            error_messages = []
+            
+            # Primo tentativo: logout con utente specifico
+            try:
+                result = subprocess.run(
+                    ['gh', 'auth', 'logout', '--hostname', 'github.com', '--user', current_user],
+                    capture_output=True,
+                    text=True,
+                    input='y\n',
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                )
+                if result.returncode == 0:
+                    logout_success = True
+                else:
+                    error_messages.append(f"Logout con utente: {result.stderr}")
+            except Exception as e:
+                error_messages.append(f"Errore logout con utente: {str(e)}")
+            
+            # Secondo tentativo: logout generico se il primo fallisce
+            if not logout_success:
+                try:
+                    result = subprocess.run(
+                        ['gh', 'auth', 'logout', '--hostname', 'github.com'],
+                        capture_output=True,
+                        text=True,
+                        input='y\n',
+                        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                    )
+                    if result.returncode == 0:
+                        logout_success = True
+                    else:
+                        error_messages.append(f"Logout generico: {result.stderr}")
+                except Exception as e:
+                    error_messages.append(f"Errore logout generico: {str(e)}")
+            
+            # Terzo tentativo: logout forzato se gli altri falliscono
+            if not logout_success:
+                try:
+                    result = subprocess.run(
+                        ['gh', 'auth', 'logout', '--hostname', 'github.com', '--force'],
+                        capture_output=True,
+                        text=True,
+                        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
+                    )
+                    if result.returncode == 0:
+                        logout_success = True
+                    else:
+                        error_messages.append(f"Logout forzato: {result.stderr}")
+                except Exception as e:
+                    error_messages.append(f"Errore logout forzato: {str(e)}")
+            
+            if logout_success:
                 # Aggiorna SOLO l'utente GitHub dopo il logout
                 self.invalidate_github_user_cache()
                 self.update_dir_label()
                 show_info("Logout", "Logout da GitHub eseguito con successo!")
             else:
-                show_error("Errore Logout", f"Errore durante il logout: {result.stderr}")
+                show_error("Errore Logout", f"Tutti i tentativi di logout sono falliti:\n" + "\n".join(error_messages))
+                
         except FileNotFoundError:
             show_error("GitHub CLI non trovato", 
                       "GitHub CLI non è installato o non è nel PATH.")
