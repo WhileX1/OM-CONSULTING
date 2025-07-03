@@ -669,6 +669,8 @@ class GitGuiApp(tk.Tk):
                 self.update_dir_label(force_refresh=True)
                 self.check_repo(force_refresh=True)
                 show_info("Cambio directory", f"Directory cambiata in:\n{os.getcwd()}")
+                # Aggiorna la lista branch (anche remoti) dopo cambio directory
+                self._update_branch_info(prune=True)
             except Exception as e:
                 show_error("Errore", f"Impossibile cambiare directory:\n{e}")
 
