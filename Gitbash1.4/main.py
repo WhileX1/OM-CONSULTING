@@ -8,6 +8,7 @@ import os, sys, atexit
 import ctypes
 import threading
 from widgets_progress import ProgressWindow
+import shlex
 from helpers import (save_last_dir, load_last_dir, create_scrollable_list,
                      count_selected_files, update_counter_var, get_subprocess_kwargs,
                      show_warning, show_info, show_error)
@@ -338,7 +339,6 @@ class GitGuiApp(tk.Tk):
             force_push = force_var.get()
 
             def expand_dirs_with_progress(paths, parent_win):
-                import os
                 all_files = []
                 all_dirs = set()
                 folders = [p for p in paths if os.path.isdir(p)]
@@ -389,17 +389,31 @@ class GitGuiApp(tk.Tk):
                 # Ritorna sia i file che tutte le cartelle (per git add)
                 return all_files, list(all_dirs)
 
+
             def threaded_expand_and_push():
                 try:
                     expanded_files, expanded_dirs = expand_dirs_with_progress(selected_files, self)
-                    # Prima di pushare, aggiungi tutti i file espansi (anche nuovi/non tracciati) e tutte le cartelle trovate
+                    # Limita la lunghezza della riga di comando per git add (WinError 206 workaround)
                     def show_add_error(msg):
                         self.after(0, lambda: show_error("Errore git add", msg))
                     try:
-                        if expanded_files or expanded_dirs:
-                            kwargs = get_subprocess_kwargs()
-                            # Usa sempre il modulo subprocess già importato globalmente
-                            subprocess.check_output(["git", "add"] + expanded_dirs + expanded_files, text=True, **kwargs)
+                        # Unisci file e cartelle, ma spezza in batch se la riga è troppo lunga
+                        MAX_CMD = 8000 if sys.platform.startswith('win') else 32000
+                        items = expanded_dirs + expanded_files
+                        batch = []
+                        total_len = 0
+                        kwargs = get_subprocess_kwargs()
+                        for item in items:
+                            # Considera anche le virgolette se servono
+                            quoted = shlex.quote(item)
+                            if total_len + len(quoted) + 1 > MAX_CMD and batch:
+                                subprocess.check_output(["git", "add"] + batch, text=True, **kwargs)
+                                batch = []
+                                total_len = 0
+                            batch.append(item)
+                            total_len += len(quoted) + 1
+                        if batch:
+                            subprocess.check_output(["git", "add"] + batch, text=True, **kwargs)
                     except Exception as add_exc:
                         show_add_error(f"Errore durante 'git add':\n{add_exc}")
                         return
@@ -1017,105 +1031,3 @@ class GitGuiApp(tk.Tk):
         # Focus sul primo campo
         origin_entry.focus()
 
-if __name__ == "__main__":
-    lockfile = os.path.join(os.getenv('TEMP') or '.', 'gitbash_auto.lock')
-
-
-    def is_pid_running(pid):
-        try:
-            if pid <= 0:
-                return False
-            if os.name == 'nt':
-                PROCESS_QUERY_INFORMATION = 0x0400
-                process = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
-                if process != 0:
-                    ctypes.windll.kernel32.CloseHandle(process)
-                    return True
-                else:
-                    return False
-            else:
-                os.kill(pid, 0)
-                return True
-        except Exception:
-            return False
-
-
-    def check_gui_visible(app):
-        # Controlla se la GUI Tkinter è visibile per questa istanza
-        # Dopo la creazione, la finestra principale potrebbe non essere ancora "mapped".
-        # Forziamo l'update e controlliamo se è visibile.
-        app.update_idletasks()
-        app.update()
-        return app.winfo_exists() and (app.state() != 'withdrawn')
-
-
-    # Kill any previous process of this app (if running)
-    if os.path.exists(lockfile):
-        try:
-            with open(lockfile, 'r') as f:
-                pid_str = f.read().strip()
-                pid = int(pid_str) if pid_str.isdigit() else None
-        except Exception:
-            pid = None
-        if pid and pid != os.getpid():
-            try:
-                if os.name == 'nt':
-                    import ctypes
-                    PROCESS_TERMINATE = 0x0001
-                    handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, 0, pid)
-                    if handle:
-                        ctypes.windll.kernel32.TerminateProcess(handle, -1)
-                        ctypes.windll.kernel32.CloseHandle(handle)
-                else:
-                    os.kill(pid, 9)
-            except Exception:
-                pass
-        try:
-            os.remove(lockfile)
-        except Exception:
-            pass
-
-    with open(lockfile, 'w') as f:
-        f.write(str(os.getpid()))
-
-    def remove_lock():
-        try:
-            if os.path.exists(lockfile):
-                os.remove(lockfile)
-        except Exception:
-            pass
-    atexit.register(remove_lock)
-
-    try:
-        # Controllo ambiente Tkinter
-        try:
-            import tkinter
-            root = tkinter.Tk()
-            root.withdraw()
-            root.update()
-            root.destroy()
-        except Exception as tkerr:
-            try:
-                mb.showerror("Errore ambiente Tkinter", f"Tkinter non funziona correttamente:\n{tkerr}")
-            except Exception:
-                pass
-            remove_lock()
-            sys.exit(1)
-
-        app = GitGuiApp()
-        if not check_gui_visible(app):
-            try:
-                mb.showerror("Errore GUI", "La finestra principale non è visibile.\nControlla che non ci siano errori di Tkinter o di ambiente.")
-            except Exception:
-                pass
-            remove_lock()
-            sys.exit(1)
-        app.mainloop()
-    except Exception as e:
-        try:
-            mb.showerror("Errore avvio app", f"Errore durante l'avvio dell'app:\n{e}")
-        except Exception:
-            pass
-        raise
-    finally:
-        remove_lock()
