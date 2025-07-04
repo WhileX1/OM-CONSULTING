@@ -348,10 +348,14 @@ class GitGuiApp(tk.Tk):
                     for root, dirs, files in os.walk(folder):
                         total += len(files)
                 total += len(files_only)
-                win = ProgressWindow(parent_win, title="Espansione file/cartelle...", max_value=max(1, total))
+                SHOW_PROGRESS_THRESHOLD = 10
+                show_progress = total > SHOW_PROGRESS_THRESHOLD
+                win = ProgressWindow(parent_win, title="Espansione file/cartelle...", max_value=max(1, total)) if show_progress else None
+                start_time = time.perf_counter() if win else None
                 count = 0
                 def add_log(msg):
-                    win.log(msg)
+                    if win:
+                        win.log(msg)
                 try:
                     for p in paths:
                         if os.path.isdir(p):
@@ -363,16 +367,25 @@ class GitGuiApp(tk.Tk):
                                     fpath = os.path.join(root, file)
                                     all_files.append(fpath)
                                     count += 1
-                                    win.update_progress(count)
+                                    if win:
+                                        win.update_progress(count)
                                     if count % 10 == 0:
                                         add_log(f"  + {fpath}")
                         else:
                             all_files.append(p)
                             count += 1
-                            win.update_progress(count)
+                            if win:
+                                win.update_progress(count)
                             add_log(f"[FILE] {p}")
                 finally:
-                    win.close()
+                    if win:
+                        elapsed = (time.perf_counter() - start_time) if start_time else 0
+                        min_visible = 0.20  # 200ms
+                        if elapsed < min_visible:
+                            win.top.after(int((min_visible - elapsed) * 1000), win.close)
+                            win.top.wait_window()  # Blocca finché la finestra non è chiusa
+                        else:
+                            win.close()
                 # Ritorna sia i file che tutte le cartelle (per git add)
                 return all_files, list(all_dirs)
 
@@ -385,9 +398,8 @@ class GitGuiApp(tk.Tk):
                     try:
                         if expanded_files or expanded_dirs:
                             kwargs = get_subprocess_kwargs()
-                            import subprocess as sp
-                            # Esegui git add su tutte le cartelle e file trovati
-                            sp.check_output(["git", "add"] + expanded_dirs + expanded_files, text=True, **kwargs)
+                            # Usa sempre il modulo subprocess già importato globalmente
+                            subprocess.check_output(["git", "add"] + expanded_dirs + expanded_files, text=True, **kwargs)
                     except Exception as add_exc:
                         show_add_error(f"Errore durante 'git add':\n{add_exc}")
                         return
