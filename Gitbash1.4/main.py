@@ -338,7 +338,7 @@ class GitGuiApp(tk.Tk):
             self._push_commit_msg = msg
             force_push = force_var.get()
 
-            def expand_dirs_with_progress(paths, parent_win):
+            def expand_dirs_with_progress(paths, win):
                 all_files = []
                 all_dirs = set()
                 folders = [p for p in paths if os.path.isdir(p)]
@@ -348,14 +348,11 @@ class GitGuiApp(tk.Tk):
                     for root, dirs, files in os.walk(folder):
                         total += len(files)
                 total += len(files_only)
-                SHOW_PROGRESS_THRESHOLD = 20
-                show_progress = total > SHOW_PROGRESS_THRESHOLD
-                win = ProgressWindow(parent_win, title="Espansione file/cartelle...", max_value=max(1, total)) if show_progress else None
-                start_time = time.perf_counter() if win else None
                 count = 0
                 def add_log(msg):
                     if win:
                         win.log(msg)
+                win.set_max(max(1, total))
                 try:
                     for p in paths:
                         if os.path.isdir(p):
@@ -368,43 +365,39 @@ class GitGuiApp(tk.Tk):
                                     all_files.append(fpath)
                                     count += 1
                                     if win:
-                                        win.update_progress(count)
+                                        win.update_progress_files(count)
                                     if count % 10 == 0:
                                         add_log(f"  + {fpath}")
                         else:
                             all_files.append(p)
                             count += 1
                             if win:
-                                win.update_progress(count)
+                                win.update_progress_files(count)
                             add_log(f"[FILE] {p}")
                 finally:
-                    if win:
-                        elapsed = (time.perf_counter() - start_time) if start_time else 0
-                        min_visible = 0.20  # 200ms
-                        if elapsed < min_visible:
-                            win.top.after(int((min_visible - elapsed) * 1000), win.close)
-                            win.top.wait_window()  # Blocca finché la finestra non è chiusa
-                        else:
-                            win.close()
-                # Ritorna sia i file che tutte le cartelle (per git add)
+                    pass
                 return all_files, list(all_dirs)
 
 
             def threaded_expand_and_push():
+                win = None
                 try:
-                    expanded_files, expanded_dirs = expand_dirs_with_progress(selected_files, self)
-                    # Limita la lunghezza della riga di comando per git add (WinError 206 workaround)
+                    win = ProgressWindow(self, title="Push in corso...", max_value=1)
+                    win.log("Espansione file e cartelle...")
+                    expanded_files, expanded_dirs = expand_dirs_with_progress(selected_files, win)
+                    win.update_progress_files(len(expanded_files))
+                    win.log("Aggiunta file a git...")
                     def show_add_error(msg):
+                        if win:
+                            win.log(msg)
                         self.after(0, lambda: show_error("Errore git add", msg))
                     try:
-                        # Unisci file e cartelle, ma spezza in batch se la riga è troppo lunga
                         MAX_CMD = 8000 if sys.platform.startswith('win') else 32000
                         items = expanded_dirs + expanded_files
                         batch = []
                         total_len = 0
                         kwargs = get_subprocess_kwargs()
                         for item in items:
-                            # Considera anche le virgolette se servono
                             quoted = shlex.quote(item)
                             if total_len + len(quoted) + 1 > MAX_CMD and batch:
                                 subprocess.check_output(["git", "add"] + batch, text=True, **kwargs)
@@ -414,18 +407,35 @@ class GitGuiApp(tk.Tk):
                             total_len += len(quoted) + 1
                         if batch:
                             subprocess.check_output(["git", "add"] + batch, text=True, **kwargs)
+                        win.update_progress_push(1)
                     except Exception as add_exc:
                         show_add_error(f"Errore durante 'git add':\n{add_exc}")
+                        if win:
+                            win.close()
                         return
-                    # Ora esegui il push (che farà commit e push)
+                    win.set_push_mode("indeterminate")
+                    win.log("Commit in corso...")
                     ok, push_msg = GitRepo.push(expanded_files, branch_name, msg, force=force_push)
-                    self.after(0, lambda: (
-                        self.invalidate_cache(),
-                        show_info("Successo", f"Push eseguito con successo al branch {branch_name}") if ok else show_error("Errore Push", push_msg),
+                    win.log("Push in corso...")
+                    win.set_push_mode("determinate")
+                    win.update_progress_push(2)
+                    if win:
+                        win.log(push_msg)
+                    def after_push():
+                        if win:
+                            win.update_progress_push(3)
+                            win.close()
+                        self.invalidate_cache()
+                        if ok:
+                            show_info("Successo", f"Push eseguito con successo al branch {branch_name}")
+                        else:
+                            show_error("Errore Push", push_msg)
                         self.update_dir_label(force_refresh=True)
-                    ))
+                    self.after(0, after_push)
                 except Exception as e:
-                    self.after(0, lambda: show_error("Errore", f"Errore durante l'espansione file:\n{e}"))
+                    if win:
+                        win.close()
+                    self.after(0, lambda: show_error("Errore", f"Errore durante il push:\n{e}"))
 
             threading.Thread(target=threaded_expand_and_push, daemon=True).start()
 
