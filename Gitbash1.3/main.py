@@ -348,7 +348,7 @@ class GitGuiApp(tk.Tk):
                     for root, dirs, files in os.walk(folder):
                         total += len(files)
                 total += len(files_only)
-                SHOW_PROGRESS_THRESHOLD = 10
+                SHOW_PROGRESS_THRESHOLD = 30
                 show_progress = total > SHOW_PROGRESS_THRESHOLD
                 win = ProgressWindow(parent_win, title="Espansione file/cartelle...", max_value=max(1, total)) if show_progress else None
                 start_time = time.perf_counter() if win else None
